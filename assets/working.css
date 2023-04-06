@@ -343,7 +343,7 @@ li {
 
 /* Tables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-table {
+/* table {
   border-collapse: collapse;
 }
 th:not(.CalendarDay),
@@ -357,7 +357,7 @@ td:first-child:not(.CalendarDay) {
 th:last-child:not(.CalendarDay),
 td:last-child:not(.CalendarDay) {
   padding-right: 0; }
-
+*/
 
 /* Spacing
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
