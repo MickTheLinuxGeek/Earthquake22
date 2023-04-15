@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+
 """
 Python script that uses the USGS.gov API to retrieve the SC earthquake swarm data.
 
@@ -14,9 +17,6 @@ usgs_api.py script contains the following functions:
     get_dyfi_urls() - returns a pandas dataframe containing the event ids and the dyfi urls.
     get_dyfi_zip_data() - Retrieves the cdi_zip.txt file data for each event and saves to file.
 """
-
-# TODO: Add logging
-# TODO: Update all docstrings
 
 __version__ = "1.0.0"
 
@@ -140,7 +140,7 @@ def get_dyfi_urls(eq_id_url_df, http):
         print("Retrieving cdi_zip.txt urls.")
     dyfi_zip_urls = []
     querystring_list = list(eq_id_url_df['properties.detail'])
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=16) as pool:
         task_list = [pool.submit(get_url, http, qry) for qry in querystring_list]
         for f in futures.as_completed(task_list):
             res_data = f.result().json()
@@ -149,6 +149,8 @@ def get_dyfi_urls(eq_id_url_df, http):
             temp_df = res_data_df.loc[res_data_df['preferredWeight'] ==
                                       res_data_df['preferredWeight'].max()]
             temp_df = pd.json_normalize(temp_df['contents'])
+            if 'cdi_zip.txt.url' not in temp_df:
+                continue
             dyfi_zip_urls.append(dict(e_id=event_id, e_url=temp_df['cdi_zip.txt.url'][0],
                                       e_dyfi_geo_1k_url=temp_df['dyfi_geo_1km.geojson.url'][0],
                                       e_dyfi_geo_10k_url=temp_df['dyfi_geo_10km.geojson.url'][0],
@@ -332,6 +334,7 @@ def get_dyfi_zip_data(zip_df, http):
                              'Standard deviation': 'Std_Dev',
                              'State[': 'State'},
                             axis=1, inplace=True)
+        res_data_dff.State.fillna('No State', inplace=True)
         res_data_dff.drop(['Suspect?', 'Std_Dev', 'cityid]'], axis=1, inplace=True)
 #        filename = data_dir + "cdi_zip" + "." + eid
         new_dir = Path(DATA_DIR + eid)

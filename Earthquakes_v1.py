@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-#  TODO:  Add program/app documentation
-
-
 __author__ = "Michael Biel"
 __copyright__ = "Copyright 2023, The Earthquake Vis. Project"
 __license__ = ""
@@ -32,6 +29,9 @@ rowEvenColor = 'Wheat'
 rowOddColor = 'NavajoWhite'
 
 loading_style = {'position': 'absolute', 'align-self': 'center'}
+graph_plot_config = {'displayModeBar': False,
+                     'scrollZoom': False, 'staticPlot': False,
+                     'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d', 'toImage']}
 
 select_graph = go.Figure()
 select_graph = select_graph.update_layout(
@@ -39,18 +39,18 @@ select_graph = select_graph.update_layout(
     paper_bgcolor='#FFDEAD',
     xaxis={"visible": False},
     yaxis={"visible": False},
-    annotations=[
-        {"text": "Filter events displayed by using the date and magnitude filters.<br>" +
-            "<br>Select an event marker from the map and a plot type from the dropdown for more event information.",
-         "xref": "paper",
-         "yref": "paper",
-         "showarrow": False,
-         "font": {"size": 28}}
-    ]
+    # annotations=[
+    #     {"text": "Filter events displayed by using the date and magnitude filters.<br>" +
+    #         "<br>Select an event marker from the map and a plot type from the dropdown for more event information.",
+    #      "xref": "paper",
+    #      "yref": "paper",
+    #      "showarrow": False,
+    #      "font": {"size": 28}}
+    #  ]
 )
 
 # read in mapbox access token
-# px.set_mapbox_access_token(open(".mapbox_token").read())  FIXME:  Remove
+# px.set_mapbox_access_token(open(".mapbox_token").read())
 mapbox_access_token = open(".mapbox_token").read()
 
 # Uncomment this line to display all dataframe columns in the console.
@@ -71,19 +71,20 @@ geo_df['Event_Time'] = pd.to_datetime(geo_df.time, unit="ms") \
 for x in range(len(geo_df['Event_Time'])):
     geo_df.loc[x, 'Event_Time'] = geo_df['Event_Time'][x].replace(microsecond=0)
 
-# Filtered the eq event id into the dataframe
+# Filter dataframe
 geo_df = geo_df[['id', 'mag', 'place', 'detail', 'felt', 'cdi', 'title', 'geometry', 'Event_Date', 'Event_Time']]
 geo_df = geo_df.rename(columns={'mag': 'Mag', 'place': 'Place', 'detail': 'Url', 'felt': 'Felt',
                                 'cdi': 'CDI', 'title': 'Title'})  # , 'geometry': 'Geometry'})
 geo_df.Felt = geo_df.Felt.fillna(0).astype('int')
 geo_df.CDI = geo_df.CDI.fillna(0).astype('float')
+geo_df.Place = geo_df.Place.fillna('No Location')
 
 geo_df['Depth'] = geo_df.geometry.z
 geo_df['Mag'] = geo_df.Mag.round(1)
 
 geo_df = geo_df.copy()
 
-print(geo_df.head())  # FIXME Remove this line when finished
+# print(geo_df.head())
 
 blackbold = {'color': 'black', 'font-weight': 'bold'}
 
@@ -104,11 +105,11 @@ app.layout = html.Div(
                             ),
                             # href="https://plotly.com/dash/",
                         ),
-                        html.H3("DASH - EARTHQUAKE DATA APP"),
+                        html.H3("DASH - EARTHQUAKE DATA APP", style={'color': 'SteelBlue'}),
                         dbc.Label("""Date Range Filter"""),
                         html.Div(
                             # className="div-for-dropdown",
-                            children=[
+                            children=[html.Div(
                                 dcc.DatePickerRange(
                                     id="my-date-picker-range",
                                     calendar_orientation='horizontal',
@@ -119,25 +120,28 @@ app.layout = html.Div(
                                     end_date=date.today(),
                                     display_format="MM-DD-Y",
                                     updatemode='bothdates',
-                                    style={'border': '1px solid black', 'border-radius': '2px', 'border-spacing': '0px'}
-                                ),
+                                )),
                                 html.Label('Min./Max. Magnitude Filter'),
                                 html.Div(children=[
                                     dbc.Input(id="min-mag-input",
                                               type="number", min=1, max=10, step=0.5,
-                                              size="sm",
+                                              size="md",
                                               placeholder="Min.",
                                               debounce=True,
                                               value=1,
                                               autofocus=True,
+                                              n_submit=0,
+                                              n_blur=0,
                                               style={"width": "21.5%"},
                                               ),
                                     dbc.Input(id="max-mag-input",
                                               type="number", min=1, max=10, step=0.5,
-                                              size="sm",
+                                              size="md",
                                               placeholder="Max.",
                                               debounce=True,
                                               value=10,
+                                              n_submit=0,
+                                              n_blur=0,
                                               style={"width": "21.5%"},
                                               ),
                                 ], style={'display': 'flex'}
@@ -148,6 +152,9 @@ app.layout = html.Div(
                                                       'Response Vs. Time', 'DYFI Responses'],
                                              value='Intensity Plot',
                                              clearable=False,
+                                             searchable=False,
+                                             multi=False,
+                                             disabled=False,
                                              style={"width": '65%'},
                                              ),
                             ],
@@ -165,16 +172,16 @@ app.layout = html.Div(
                                                                      'toImage']},
                                   style={'padding-bottom': '2px', 'padding-top': '1px',
                                          'padding-left': '2px', 'padding-right': '2px',
-                                         'height': '45vh'},
+                                         'height': '45vh', 'width': '100%'},
                                   ),
-                        ],
+                            ],
                 ),
                 html.Div(
                     className="twelve columns",
                     children=[
                         dcc.Graph(id="graph-plot",
                                   config={'displayModeBar': False,
-                                          'scrollZoom': False,
+                                          'scrollZoom': False, 'staticPlot': False,
                                           'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d', 'toImage']},
                                   style={'padding-bottom': '1px', 'padding-top': '2px',
                                          'padding-left': '1px', 'padding-right': '1px', 'flex-grow': '1',
@@ -184,8 +191,26 @@ app.layout = html.Div(
                         ],
                     style={'position': 'relative', 'display': 'flex', 'justify-content': 'center'},
                 ),
-            ],
+            ]
         ),
+        html.Div(style={'margin-bottom': '10px'}, children=[
+            dbc.Col(width=12, children=[
+                dbc.Row(children=[
+                    dbc.Col(width=1, children=[]),
+                    dbc.Col(width=2, children=[
+                        html.Label('Data Provided By'),
+                        html.Div(children=[dcc.Link('U.S. Geological Survey - USAGov',
+                                                    href='https://www.usgs.gov/earthquake')]),
+                        html.Div(children=[dcc.Link('U.S. Census Bureau',
+                                                    href='https://www.census.gov/')])
+                        ]),
+                    dbc.Col(width=2, children=[
+                        html.Label('Contact'),
+                    ])
+                ])
+            ]
+            )]
+        )
     ],
 )
 
@@ -231,7 +256,7 @@ def update_output(start_date, end_date, input1, input2):
                             color_continuous_scale=px.colors.sequential.Jet,
                             zoom=11.25,
                             center=dict(lat=34.170983, lon=-80.794252),
-                            # mapbox_style='streets',  # FIXME:  Remove
+                            # mapbox_style='streets',
                             title='South Carolina Earthquake Swarm Dec - 2021 to Present',
                             template='ggplot2')
 
@@ -292,23 +317,23 @@ def display_intensity_plot(evnt_id, sdata):
 
     """
     filename = DATA_DIR / evnt_id / "dyfi_geo_1km.geojson"
-    print(filename)  # FIXME:  Remove after testing
+    # print(filename)
 
     with open(filename) as file1:
         cdi_geo_1km_geojson = json.load(file1)
     cdi_geo_1km_df = pd.json_normalize(cdi_geo_1km_geojson, ['features'])
 
-    print(cdi_geo_1km_df)  # FIXME:  Remove after testing
+    # print(cdi_geo_1km_df)
 
     filename = DATA_DIR / evnt_id / "dyfi_geo_10km.geojson"
-    print(filename)  # FIXME:  Remove after testing
+    # print(filename)
 
     with open(filename) as file2:
         cdi_geo_10km_geojson = json.load(file2)
 
     cdi_geo_10km_df = pd.json_normalize(cdi_geo_10km_geojson, ['features'])
 
-    print(cdi_geo_10km_df)  # FIXME:  Remove after testing
+    # print(cdi_geo_10km_df)
 
     fig = make_subplots(rows=1, cols=2, subplot_titles=['CDI Choropleth Mapbox Plot - 1km Spacing',
                                                         'CDI Choropleth Mapbox Plot - 10km Spacing'],
@@ -466,7 +491,7 @@ def display_intensity_dist_plot(evnt_id):
     filename = DATA_DIR / evnt_id / "dyfi_plot_atten.json"
     intensity_dist_df = pd.read_json(filename)
 
-    print(len(intensity_dist_df), intensity_dist_df)  # FIXME:  Remove after testing
+    # print(len(intensity_dist_df), intensity_dist_df)
 
     fig = make_subplots(rows=2, cols=2, subplot_titles=('All Reported Data',
                                                         'Estimated Intensity',
@@ -480,7 +505,7 @@ def display_intensity_dist_plot(evnt_id):
 
     for dsi in range(len(intensity_dist_df)):
         dataset_df = pd.DataFrame(intensity_dist_df.datasets[dsi])
-        # print(dataset_df)  # FIXME:  Remove after testing
+        # print(dataset_df)
         if dataset_df['class'][0] == 'scatterplot1':
             sct_plt_df = dataset_df.from_records(data=dataset_df.data)
             xi = list(sct_plt_df.x)
@@ -529,7 +554,7 @@ def display_intensity_dist_plot(evnt_id):
 
         elif dataset_df['class'][0] == 'binned':
             mean_plt_df = dataset_df.from_records(data=dataset_df.data)
-            print(mean_plt_df)  # FIXME:  Remove after testing
+            # print(mean_plt_df)
             xi = mean_plt_df.x
             yi = mean_plt_df.y
             yerr = mean_plt_df.stdev
@@ -594,11 +619,11 @@ def display_response_time_plot(evnt_id):
     filename = DATA_DIR / evnt_id / "dyfi_plot_numresp.json"
     resp_time_df = pd.read_json(filename)
 
-    print(len(resp_time_df), resp_time_df)  # FIXME:  Remove after testing
+    # print(len(resp_time_df), resp_time_df)
 
     resp_time_ds_df = pd.DataFrame(resp_time_df.datasets[0])
 
-    print(resp_time_ds_df)  # FIXME:  Remove after testing
+    # print(resp_time_ds_df)
     resp_time_plot_df = resp_time_ds_df.from_records(data=resp_time_ds_df.data)
 
     xi = list(resp_time_plot_df.x)
@@ -643,8 +668,6 @@ def display_dyfi_responses_tbl(evnt_id):
     filename = DATA_DIR / evnt_id / "cdi_zip.csv"
     dyfi_responses_df = pd.read_csv(filename)
 
-    dyfi_responses_df.State.fillna('No State', inplace=True)
-
     fig = go.Figure(data=[go.Table(header=dict(values=list(dyfi_responses_df.columns),
                                                line_color='darkslategray',
                                                fill_color='SandyBrown',
@@ -658,25 +681,30 @@ def display_dyfi_responses_tbl(evnt_id):
                                                       dyfi_responses_df.Longitude,
                                                       dyfi_responses_df.City,
                                                       dyfi_responses_df.State],
+                                              format=[None, None, None, None, None, None, None, None],
                                               line={'color': '#483D8B', 'width': 2},
                                               line_color='darkslategray',
                                               fill_color=[[rowOddColor, rowEvenColor, rowOddColor, rowEvenColor,
                                                            rowOddColor, rowEvenColor, rowOddColor, rowEvenColor]*len(dyfi_responses_df)],
                                               align='left',
-                                              ))
-                          ])
+                                              ),
+                                   # columnorder=[0, 1, 2, 3, 4, 5, 6, 7],
+                                   ),
+                          ],)
 
     fig.update_layout(title_text='Did You Feel It (DYFI) Responses',
                       plot_bgcolor='#FAEBD7',
                       paper_bgcolor='#FFDEAD',
                       autosize=False,
-                      margin={"r": 20, "t": 35, "l": 5, "b": 25})
+                      margin={"r": 20, "t": 35, "l": 5, "b": 25},)
 
     return fig
 
 
 @app.callback(Output("graph-plot", "figure"),
-              Output("loading", 'parent_style'),
+              Output("graph-plot", "config"),
+              Output("loading", "parent_style"),
+              Output("plot-type-dropdown", "disabled"),
               Input("map-graph", "selectedData"),
               Input("plot-type-dropdown", "value"),
               prevent_initial_call=False)
@@ -701,25 +729,48 @@ def plot_graphs(selectedData, user_input):
 
     """
     new_loading_style = loading_style
+    new_gp_config = graph_plot_config
     if selectedData is None:
-        return select_graph, new_loading_style
+        select_graph.update_layout(annotations=[
+            {"text": "Filter events displayed by using the date and magnitude filters.<br>" +
+                     "<br>Select an event marker from the map and a plot type from the dropdown for more event information.",
+             "xref": "paper",
+             "yref": "paper",
+             "showarrow": False,
+             "font": {"size": 28}}
+            ])
+        return select_graph, new_gp_config, new_loading_style, True
     else:
         event_id = selectedData['points'][0]['customdata'][8]
 
-        print(selectedData['points'][0]['lat'], selectedData['points'][0]['lon'])  # FIXME:  Remove after testing
-        print(selectedData, user_input, event_id)  # FIXME:  Remove after testing
-        print(new_loading_style)
+        # print(selectedData['points'][0]['lat'], selectedData['points'][0]['lon'])
+        # print(selectedData, user_input, event_id)
+        # print(new_loading_style)
+        # print(selectedData['points'][0]['customdata'][6])
 
-        if event_id and user_input == "Intensity Plot":
-            return display_intensity_plot(event_id, selectedData), new_loading_style
+        # if DYFI felt is zero
+        if selectedData['points'][0]['customdata'][6] == 0:
+            select_graph.update_layout(annotations=[
+                {"text": "No DYFI Data for Event",
+                 "xref": "paper",
+                 "yref": "paper",
+                 "showarrow": False,
+                 "font": {"size": 28}}
+            ])
+            return select_graph, new_gp_config, new_loading_style, True
+        elif event_id and user_input == "Intensity Plot":
+            return display_intensity_plot(event_id, selectedData), new_gp_config, new_loading_style, False
         elif event_id and user_input == "Zip Map":
-            return display_zip_plot(event_id, selectedData), new_loading_style
+            return display_zip_plot(event_id, selectedData), new_gp_config, new_loading_style, False
         elif event_id and user_input == "Intensity Vs. Distance":
-            return display_intensity_dist_plot(event_id), new_loading_style
+            return display_intensity_dist_plot(event_id), new_gp_config, new_loading_style, False
         elif event_id and user_input == "Response Vs. Time":
-            return display_response_time_plot(event_id), new_loading_style
+            return display_response_time_plot(event_id), new_gp_config, new_loading_style, False
         elif event_id and user_input == "DYFI Responses":
-            return display_dyfi_responses_tbl(event_id), new_loading_style
+            new_gp_config = {'displayModeBar': False,
+                             'scrollZoom': False, 'staticPlot': True,
+                             'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d', 'toImage']}
+            return display_dyfi_responses_tbl(event_id), new_gp_config, new_loading_style, False
 
 
 if __name__ == '__main__':
