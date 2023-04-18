@@ -89,6 +89,8 @@ geo_df = geo_df.copy()
 blackbold = {'color': 'black', 'font-weight': 'bold'}
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = app.server
+
 app.layout = html.Div(
     children=[
         html.Div(
