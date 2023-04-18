@@ -180,9 +180,10 @@ app.layout = html.Div(
                     className="twelve columns",
                     children=[
                         dcc.Graph(id="graph-plot",
-                                  config={'displayModeBar': False,
-                                          'scrollZoom': False, 'staticPlot': False,
-                                          'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d', 'toImage']},
+                                  # config={'displayModeBar': False,
+                                  #         'scrollZoom': False, 'staticPlot': False,
+                                  #         'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d', 'toImage']},
+                                  config=graph_plot_config,
                                   style={'padding-bottom': '1px', 'padding-top': '2px',
                                          'padding-left': '1px', 'padding-right': '1px', 'flex-grow': '1',
                                          'height': '512px'},
@@ -196,7 +197,7 @@ app.layout = html.Div(
         html.Div(style={'margin-bottom': '10px'}, children=[
             dbc.Col(width=12, children=[
                 dbc.Row(children=[
-                    dbc.Col(width=1, children=[]),
+                    dbc.Col(width=3, children=[]),
                     dbc.Col(width=2, children=[
                         html.Label('Data Provided By'),
                         html.Div(children=[dcc.Link('U.S. Geological Survey - USAGov',
@@ -204,9 +205,13 @@ app.layout = html.Div(
                         html.Div(children=[dcc.Link('U.S. Census Bureau',
                                                     href='https://www.census.gov/')])
                         ]),
-                    dbc.Col(width=2, children=[
+                    dbc.Col(width={'size': 2, 'offset': 1}, children=[
                         html.Label('Contact'),
-                    ])
+                        html.Div(children=[dcc.Link('mick.the.linux.geek@hotmail.com',
+                                                    href='mailto:mick.the.linuk.geek@hotmail.com')]),
+                        html.Div(children=[dcc.Link('Mastodon',
+                                                    href='https://mastodon.online/@mickthelinuxgeek')])
+                    ]),
                 ])
             ]
             )]
@@ -256,13 +261,11 @@ def update_output(start_date, end_date, input1, input2):
                             color_continuous_scale=px.colors.sequential.Jet,
                             zoom=11.25,
                             center=dict(lat=34.170983, lon=-80.794252),
-                            # mapbox_style='streets',
                             title='South Carolina Earthquake Swarm Dec - 2021 to Present',
                             template='ggplot2')
 
-    fig.update_layout(mapbox_style="streets", mapbox_accesstoken=mapbox_access_token)
-
-    fig.update_layout(coloraxis_colorbar=dict(orientation='h',
+    fig.update_layout(mapbox_style="streets", mapbox_accesstoken=mapbox_access_token,
+                      coloraxis_colorbar=dict(orientation='h',
                                               lenmode='pixels',
                                               len=435,
                                               thicknessmode='pixels',
@@ -270,9 +273,8 @@ def update_output(start_date, end_date, input1, input2):
                                               xanchor='left',
                                               x=0,
                                               xpad=3,
-                                              yanchor='top'))
-
-    fig.update_layout(title=dict(font=dict(color='#2F4F4F')),
+                                              yanchor='top'),
+                      title=dict(font=dict(color='#2F4F4F')),
                       autosize=True,
                       margin=dict(t=25, b=0, l=0, r=0),
                       clickmode='event+select',
@@ -288,9 +290,8 @@ def update_output(start_date, end_date, input1, input2):
                                                  "Magnitude: %{customdata[4]}",
                                                  "Lat:  %{lat},  " + "Lon:  %{lon}    " +
                                                  "Depth(km):  %{customdata[5]}",
-                                                 "DYFI: %{customdata[6]}"]))
-
-    fig.update_traces(mode='markers',
+                                                 "DYFI: %{customdata[6]}"]),
+                      mode='markers',
                       marker={'size': 10},
                       unselected={'marker': {'opacity': 0.75}},
                       selected={'marker': {'opacity': 1, 'size': 25}})
@@ -353,6 +354,16 @@ def display_intensity_plot(evnt_id, sdata):
                                                     'CDI: %{z}',
                                       marker=dict(opacity=0.50)), row=1, col=1)
 
+    fig.add_trace(go.Scattermapbox(lon=[sdata['points'][0]['lon']],
+                                   lat=[sdata['points'][0]['lat']],
+                                   showlegend=False,
+                                   subplot="mapbox",
+                                   mode='markers+lines',
+                                   marker={'size': 12, 'opacity': 1, 'symbol': ['star']},
+                                   name='',
+                                   hoverlabel={'bgcolor': 'DimGrey'},
+                                   hovertemplate='Epicenter:  %{lon}, %{lat}'))
+
     fig.add_trace(go.Choroplethmapbox(geojson=cdi_geo_10km_geojson,
                                       locations=cdi_geo_10km_df['properties.name'],
                                       z=cdi_geo_10km_df['properties.cdi'],
@@ -364,16 +375,6 @@ def display_intensity_plot(evnt_id, sdata):
                                       hovertemplate='UTM Geocode/City: %{text}<br>' +
                                                     'CDI: %{z}',
                                       marker=dict(opacity=0.50)), row=1, col=2)
-
-    fig.add_trace(go.Scattermapbox(lon=[sdata['points'][0]['lon']],
-                                   lat=[sdata['points'][0]['lat']],
-                                   showlegend=False,
-                                   subplot="mapbox",
-                                   mode='markers+lines',
-                                   marker={'size': 12, 'opacity': 1, 'symbol': ['star']},
-                                   name='',
-                                   hoverlabel={'bgcolor': 'DimGrey'},
-                                   hovertemplate='Epicenter:  %{lon}, %{lat}'))
 
     fig.add_trace(go.Scattermapbox(lon=[sdata['points'][0]['lon']],
                                    lat=[sdata['points'][0]['lat']],
@@ -774,4 +775,4 @@ def plot_graphs(selectedData, user_input):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False, port=8050)
+    app.run(debug=False, use_reloader=False, port=8050)
