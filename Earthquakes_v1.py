@@ -770,11 +770,12 @@ def plot_graphs(selectedData, user_input):
         elif event_id and user_input == "Response Vs. Time":
             return display_response_time_plot(event_id), new_gp_config, new_loading_style, False
         elif event_id and user_input == "DYFI Responses":
+            # Changed new_gp_config staticPlot to always False; StaticPlot does not allow for scrolling large tables.
             new_gp_config = {'displayModeBar': False,
-                             'scrollZoom': False, 'staticPlot': True,
+                             'scrollZoom': False, 'staticPlot': False,
                              'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d', 'toImage']}
             return display_dyfi_responses_tbl(event_id), new_gp_config, new_loading_style, False
 
 
 if __name__ == '__main__':
-    app.run(debug=False, use_reloader=False, port=8050)
+    app.run(debug=True, use_reloader=False, port=8050)
