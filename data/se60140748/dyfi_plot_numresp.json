@@ -1,0 +1,1 @@
+{"datasets": [{"data": [], "class": "histogram"}], "xlabel": "Time since earthquake (hours)", "preferred_unit": "hours", "ylabel": "Number of responses", "title": "Responses vs. Time Plot", "preferred_conversion": 3600}

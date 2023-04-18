@@ -1,0 +1,7 @@
+# Columns: ZIP/Location,CDI,No. of responses,Hypocentral distance,Latitude,Longitude,Suspect?,Standard deviation,City,State[,cityid]
+"29045",2.6,8,10,34.1874,-80.8158,0,0.269,"Elgin","SC"
+"29061",2.0,1,32,33.8766,-80.8506,0,0.330,"Hopkins","SC"
+"29073",2.7,1,54,33.8923,-81.2371,0,0.330,"Lexington","SC"
+"29078",2.5,3,8,34.1906,-80.7041,0,0.311,"Lugoff","SC"
+"29229",2.0,1,15,34.1419,-80.8922,0,0.330,"Columbia","SC"
+

@@ -1,0 +1,1 @@
+{"features": [{"geometry": {"coordinates": [[[-80.14463, 32.89526], [-80.03772, 32.89448], [-80.03675, 32.98467], [-80.14376, 32.98545]]], "type": "Polygon"}, "type": "Feature", "properties": {"stddev": 0.32, "nresp": 2, "name": "UTM:(17S 058 364 10000)<br>North Charleston", "cdi": 2, "dist": 7}}], "type": "FeatureCollection"}

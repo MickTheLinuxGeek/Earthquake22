@@ -1,0 +1,13 @@
+{
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "stddev": 0.33, "nresp": 1, "name": "UTM:(17S 047 376 10000)<br>Lexington", "cdi": 2.0, "dist": 45 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -81.32478, 33.98012 ], [ -81.21652, 33.98036 ], [ -81.21675, 34.07055 ], [ -81.32512, 34.07031 ], [ -81.32478, 33.98012 ] ] ] } },
+{ "type": "Feature", "properties": { "stddev": 0.33, "nresp": 1, "name": "UTM:(17S 049 375 10000)<br>West Columbia", "cdi": 2.7, "dist": 25 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -81.10814, 33.89031 ], [ -81.0, 33.89036 ], [ -81.0, 33.98055 ], [ -81.10826, 33.9805 ], [ -81.10814, 33.89031 ] ] ] } },
+{ "type": "Feature", "properties": { "stddev": 0.32, "nresp": 2, "name": "UTM:(17S 050 375 10000)<br>Columbia", "cdi": 2.5, "dist": 15 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -81.0, 33.89036 ], [ -80.89185, 33.89031 ], [ -80.89173, 33.9805 ], [ -81.0, 33.98055 ], [ -81.0, 33.89036 ] ] ] } },
+{ "type": "Feature", "properties": { "stddev": 0.311, "nresp": 3, "name": "UTM:(17S 051 375 10000)<br>Hopkins", "cdi": 2.0, "dist": 7 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -80.89185, 33.89031 ], [ -80.7837, 33.89017 ], [ -80.78347, 33.98036 ], [ -80.89173, 33.9805 ], [ -80.89185, 33.89031 ] ] ] } },
+{ "type": "Feature", "properties": { "stddev": 0.33, "nresp": 1, "name": "UTM:(17S 051 378 10000)<br>Elgin", "cdi": 4.3, "dist": 30 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -80.8915, 34.16088 ], [ -80.78301, 34.16073 ], [ -80.78278, 34.25092 ], [ -80.89139, 34.25106 ], [ -80.8915, 34.16088 ] ] ] } },
+{ "type": "Feature", "properties": { "stddev": 0.33, "nresp": 1, "name": "UTM:(17S 052 375 10000)<br>Eastover", "cdi": 2.5, "dist": 8 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -80.7837, 33.89017 ], [ -80.67555, 33.88993 ], [ -80.67521, 33.98012 ], [ -80.78347, 33.98036 ], [ -80.7837, 33.89017 ] ] ] } },
+{ "type": "Feature", "properties": { "stddev": 0.33, "nresp": 1, "name": "UTM:(17S 068 372 10000)<br>Myrtle Beach", "cdi": 2.2, "dist": 168 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -79.05993, 33.60457 ], [ -78.95221, 33.60283 ], [ -78.95007, 33.69297 ], [ -79.05791, 33.69471 ], [ -79.05993, 33.60457 ] ] ] } }
+]
+}

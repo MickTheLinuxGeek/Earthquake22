@@ -1,0 +1,1 @@
+{"datasets": [{"data": [{"y": 1, "x": 9.38, "t_seconds": 563, "t_absolute": "2022-04-09T00:10:31"}], "class": "histogram"}], "xlabel": "Time since earthquake (minutes)", "preferred_unit": "minutes", "ylabel": "Number of responses", "title": "Responses vs. Time Plot", "preferred_conversion": 60}

@@ -1,0 +1,1 @@
+{"datasets": [{"data": [{"y": 1, "x": 6.67, "t_seconds": 24018, "t_absolute": "2023-03-27T17:14:09"}, {"y": 2, "x": 23.75, "t_seconds": 85514, "t_absolute": "2023-03-28T10:19:05"}], "class": "histogram"}], "xlabel": "Time since earthquake (hours)", "preferred_unit": "hours", "ylabel": "Number of responses", "title": "Responses vs. Time Plot", "preferred_conversion": 3600}

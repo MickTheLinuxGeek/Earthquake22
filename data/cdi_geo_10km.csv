@@ -1,0 +1,8 @@
+# Columns: Geocoded box,CDI,No. of responses,Hypocentral distance,Latitude,Longitude,Suspect?,Standard deviation,City,State
+"UTM:(17S 047 376 10000)",2.0,1,45,34.0254,-81.2708,0,0.330,"Lexington",""
+"UTM:(17S 049 375 10000)",2.7,1,25,33.9355,-81.0540,0,0.330,"West Columbia",""
+"UTM:(17S 050 375 10000)",2.5,2,15,33.9355,-80.9459,0,0.320,"Columbia",""
+"UTM:(17S 051 375 10000)",2.0,3,7,33.9353,-80.8377,0,0.311,"Hopkins",""
+"UTM:(17S 051 378 10000)",4.3,1,30,34.2059,-80.8371,0,0.330,"Elgin",""
+"UTM:(17S 052 375 10000)",2.5,1,8,33.9352,-80.7294,0,0.330,"Eastover",""
+"UTM:(17S 068 372 10000)",2.2,1,168,33.6488,-79.0050,0,0.330,"Myrtle Beach",""
