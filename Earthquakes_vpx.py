@@ -7,7 +7,7 @@ import plotly.express as px
 
 pd.set_option('display.max_columns', 32)
 
-geo_df = gpd.read_file(r'./data/20221218_SC_Earthquake.geojson')
+geo_df = gpd.read_file(r'./data/SC_Earthquake.geojson')
 
 geo_df['Event_Date'] = pd.to_datetime(geo_df.time, unit="ms") \
     .dt.tz_localize('UTC') \
