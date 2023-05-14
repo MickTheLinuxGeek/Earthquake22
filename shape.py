@@ -1,3 +1,5 @@
+# Display SC zipcode shapefile as a choropleth map
+
 # from urllib.request import urlopen
 import json
 import pandas as pd
