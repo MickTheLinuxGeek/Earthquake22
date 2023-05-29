@@ -1,6 +1,30 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+# ----------------------------------------------------------------------------------------------------------
+#
+# TODO:  Use USGS api to retrieve data instead of reading downloaded data files
+#
+# TODO:  Add logging
+#
+# TODO:  Use flask caching of graph-plots; Better performance?
+#
+# TODO:  Use python-dotenv package to read in api keys
+#
+# TODO:  Refactor code
+#
+# TODO:  Use a nav bar in place of plot type dropdown
+#
+# TODO:  Re-engineer link/contacts/etc. section at bottom of document
+#
+# TODO:  sm, md, lg mobile responsive screen sizes need work
+#
+# TODO:  Add GA & NC state zipcode shapefiles for zip graph-plot -- WIP
+#
+# TODO:  Research using dash data-table for zip responses table
+#
+# ----------------------------------------------------------------------------------------------------------
+
 from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
 from datetime import date
@@ -93,8 +117,8 @@ def determine_zoom_level(longitudes=None, latitudes=None):
     # which leads to the highest possible zoom value 20, and so forth decreasing with increasing areas
     # as these variables are antiproportional
     zoom = np.interp(x=area,
-                     xp=[0, 5**-10, 4**-10, 3**-10, 2**-10, 1**-10, 1**-5],
-                     fp=[20, 15,    14,     13,     12,     7,      5])
+                     xp=[0, 5 ** -10, 4 ** -10, 3 ** -10, 2 ** -10, 1 ** -10, 1 ** -5],
+                     fp=[20, 15, 14, 13, 12, 7, 5])
 
     # Finally, return the zoom level and the associated boundary-box center coordinates
     return zoom, b_box['center']
@@ -308,21 +332,22 @@ def display_zip_plot(evnt_id, sdata):
     cdi_zip_df = pd.read_csv(filename)
     cdi_zip_df.rename({'# Columns: ZIP/Location': 'ZIP/Location'}, axis=1, inplace=True)
 
-    zc_filename = DATA_DIR / ZC_DATA_PATH / "tl_2010_45_zcta510.shp"
-    sc_zip_df = gpd.read_file(zc_filename)
+    # Using NC, SC, & GA region zipcodes instead of just SC
+    # zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.geojson"
+    # Used parquet file format for the zip code file because it is read in faster; geojson file read is way too slow
+
+    zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.parquet"
+    sc_zip_df = gpd.read_parquet(zc_filename, columns=['geometry', 'ZCTA5CE10'])
 
     cdi_zip_df['ZIP/Location'] = cdi_zip_df[['ZIP/Location']].astype('str')
     sc_zip_df['ZCTA5CE10'] = sc_zip_df[['ZCTA5CE10']].astype('str')
-    df = cdi_zip_df
-    geo_dff = gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="ZCTA5CE10",
+
+    df = cdi_zip_df.copy()
+    geo_dff = gpd.GeoDataFrame(sc_zip_df).merge(df,
+                                                left_on="ZCTA5CE10",
                                                 right_on='ZIP/Location').set_index('ZIP/Location')
 
     state_zip_json = json.loads(geo_dff.to_json())
-
-    df['ZIP/Location'] = df[['ZIP/Location']].astype('str')
-    df.set_index('ZIP/Location')
-
-    # print(df)
 
     ww = list(df['CDI'])
     xx = list(df['ZIP/Location'])
@@ -617,79 +642,81 @@ app.layout = dbc.Container([
     dbc.Row(children=[
         # Column for user controls
         dbc.Col(children=[html.Div(className="div-user-controls",
-                          children=[
-                             html.A(html.Img(className="logo",
-                                             src=app.get_asset_url("dash-logo-new.png")),
-                                    href="https://plotly.com/dash/"
-                                    ),
-                             html.H3("DASH - EARTHQUAKE DATA APP", style={'color': 'SteelBlue'}),
-                             dbc.Label("""Date Range Filter"""),
-                             # className="div-for-dropdown",
-                             html.Div(children=[
-                                 html.Div(dcc.DatePickerRange(id="my-date-picker-range",
-                                                              calendar_orientation='horizontal',
-                                                              min_date_allowed=dt(2021, 12, 1),
-                                                              max_date_allowed=date.today(),
-                                                              initial_visible_month=dt(2021, 12, 1),
-                                                              start_date=dt(2021, 12, 1).date(),
-                                                              end_date=date.today(),
-                                                              display_format="MM-DD-Y",
-                                                              updatemode='bothdates')
-                                          ),
-                                 html.Label('Min./Max. Magnitude Filter'),
-                                 html.Div(children=[
-                                     dbc.Input(id="min-mag-input",
-                                               type="number", min=1, max=10, step=0.5,
-                                               size="md",
-                                               placeholder="Min.",
-                                               debounce=True,
-                                               value=1,
-                                               autofocus=True,
-                                               n_submit=0,
-                                               n_blur=0,
-                                               style={"width": "21.5%"}),
-                                     dbc.Input(id="max-mag-input",
-                                               type="number", min=1, max=10, step=0.5,
-                                               size="md",
-                                               placeholder="Max.",
-                                               debounce=True,
-                                               value=10,
-                                               n_submit=0,
-                                               n_blur=0,
-                                               style={"width": "21.5%"}),
-                                 ], style={'display': 'flex'}
-                                 ),
-                                 html.Label("Plot Type"),
-                                 dcc.Dropdown(id='plot-type-dropdown',
-                                              options=['Intensity Plot(1km)', 'Intensity Plot(10km)', 'Zip Map',
-                                                       'Intensity Vs. Distance', 'Response Vs. Time', 'DYFI Responses'],
-                                              value='Intensity Plot(10km)',
-                                              clearable=False,
-                                              searchable=False,
-                                              multi=False,
-                                              disabled=False,
-                                              style={"width": '77%'}),  # 65%
-                             ]),
-                          ]),
+                                   children=[
+                                       html.A(html.Img(className="logo",
+                                                       src=app.get_asset_url("dash-logo-new.png")),
+                                              href="https://plotly.com/dash/"
+                                              ),
+                                       html.H3("DASH - EARTHQUAKE DATA APP", style={'color': 'SteelBlue'}),
+                                       dbc.Label("""Date Range Filter"""),
+                                       # className="div-for-dropdown",
+                                       html.Div(children=[
+                                           html.Div(dcc.DatePickerRange(id="my-date-picker-range",
+                                                                        calendar_orientation='horizontal',
+                                                                        min_date_allowed=dt(2021, 12, 1),
+                                                                        max_date_allowed=date.today(),
+                                                                        initial_visible_month=dt(2021, 12, 1),
+                                                                        start_date=dt(2021, 12, 1).date(),
+                                                                        end_date=date.today(),
+                                                                        display_format="MM-DD-Y",
+                                                                        updatemode='bothdates')
+                                                    ),
+                                           html.Label('Min./Max. Magnitude Filter'),
+                                           html.Div(children=[
+                                               dbc.Input(id="min-mag-input",
+                                                         type="number", min=1, max=10, step=0.5,
+                                                         size="md",
+                                                         placeholder="Min.",
+                                                         debounce=True,
+                                                         value=1,
+                                                         autofocus=True,
+                                                         n_submit=0,
+                                                         n_blur=0,
+                                                         style={"width": "21.5%"}),
+                                               dbc.Input(id="max-mag-input",
+                                                         type="number", min=1, max=10, step=0.5,
+                                                         size="md",
+                                                         placeholder="Max.",
+                                                         debounce=True,
+                                                         value=10,
+                                                         n_submit=0,
+                                                         n_blur=0,
+                                                         style={"width": "21.5%"}),
+                                           ], style={'display': 'flex'}
+                                           ),
+                                           html.Label("Plot Type"),
+                                           dcc.Dropdown(id='plot-type-dropdown',
+                                                        options=['Intensity Plot(1km)', 'Intensity Plot(10km)',
+                                                                 'Zip Map',
+                                                                 'Intensity Vs. Distance', 'Response Vs. Time',
+                                                                 'DYFI Responses'],
+                                                        value='Intensity Plot(10km)',
+                                                        clearable=False,
+                                                        searchable=False,
+                                                        multi=False,
+                                                        disabled=False,
+                                                        style={"width": '77%'}),  # 65%
+                                       ]),
+                                   ]),
                           ], xs=11, sm=8, md=6, lg=2, xl=4
                 ),
         # Column for map-graph
         dbc.Col(children=[html.Div(  # className="eight columns",
-                         children=[
-                             dcc.Graph(id="map-graph",
-                                       config={  # 'displayModeBar': True,
-                                               'scrollZoom': True,
-                                               'responsive': True,
-                                               'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d',
-                                                                          'toImage']},
-                                       style={'padding-bottom': '2px', 'padding-top': '4px',
-                                              'padding-left': '2px', 'padding-right': '2px',
-                                              'height': '45vh', 'width': '100%'}
-                                       ),
-                             ],
-                         )
-                ], xs=12, sm=8, md=6, lg=2, xl=8),
-        ]),
+            children=[
+                dcc.Graph(id="map-graph",
+                          config={  # 'displayModeBar': True,
+                              'scrollZoom': True,
+                              'responsive': True,
+                              'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d',
+                                                         'toImage']},
+                          style={'padding-bottom': '2px', 'padding-top': '4px',
+                                 'padding-left': '2px', 'padding-right': '2px',
+                                 'height': '45vh', 'width': '100%'}
+                          ),
+            ],
+        )
+        ], xs=12, sm=8, md=6, lg=2, xl=8),
+    ]),
     # Row & Column for the graph-plot
     dbc.Row(children=[
         dbc.Col(children=[html.Div(children=[dcc.Loading(id="loading", children=[html.Div(id="graph-plot")],
@@ -701,24 +728,24 @@ app.layout = dbc.Container([
     # This section needs a better looking style
     # Row for Links and Information
     dbc.Row(style={'margin-top': '12px', 'margin-bottom': '10px'}, children=[
-            dbc.Col(width=12, children=[
-                dbc.Row(children=[
-                    dbc.Col(width={'size': 10, 'offset': 2}, children=[
-                        html.P('Data Provided By'),
-                        html.Div(children=[dcc.Link('U.S. Geological Survey - USAGov',
-                                                    href='https://www.usgs.gov/earthquake')]),
-                        html.Div(children=[dcc.Link('U.S. Census Bureau',
-                                                    href='https://www.census.gov/')])
-                    ]),
-                    dbc.Col(width={'size': 10, 'offset': 2}, children=[
-                        html.P('Contact'),
-                        html.Div(children=[dcc.Link('mick.the.linux.geek@hotmail.com',
-                                                    href='mailto:mick.the.linuk.geek@hotmail.com')]),
-                        html.Div(children=[dcc.Link('Mastodon',
-                                                    href='https://mastodon.online/@mickthelinuxgeek')])
-                    ]),
-                ])
-            ], xs=12, sm=8, md=12, lg=10, xl=8)
+        dbc.Col(width=12, children=[
+            dbc.Row(children=[
+                dbc.Col(width={'size': 10, 'offset': 2}, children=[
+                    html.P('Data Provided By'),
+                    html.Div(children=[dcc.Link('U.S. Geological Survey - USAGov',
+                                                href='https://www.usgs.gov/earthquake')]),
+                    html.Div(children=[dcc.Link('U.S. Census Bureau',
+                                                href='https://www.census.gov/')])
+                ]),
+                dbc.Col(width={'size': 10, 'offset': 2}, children=[
+                    html.P('Contact'),
+                    html.Div(children=[dcc.Link('mick.the.linux.geek@hotmail.com',
+                                                href='mailto:mick.the.linuk.geek@hotmail.com')]),
+                    html.Div(children=[dcc.Link('Mastodon',
+                                                href='https://mastodon.online/@mickthelinuxgeek')])
+                ]),
+            ])
+        ], xs=12, sm=8, md=12, lg=10, xl=8)
     ])
 ], fluid=True)
 
@@ -813,14 +840,14 @@ def update_output(start_date, end_date, input1, input2):
               Input("map-graph", "selectedData"),
               Input("plot-type-dropdown", "value"),
               prevent_initial_call=False)
-def plot_graphs(selectedData, user_input):
+def plot_graphs(selected_data, user_input):
     """ graph-plot callback function
 
     Callback function that returns and displays the graph plot that is selected.
 
     Parameters
     ----------
-    selectedData : Python dictionary
+    selected_data : Python dictionary
         A Python dictionary containing the event data of the selected point on the map.
     user_input : string
         A string representing the graph plot type selected from the dropdown.
@@ -832,7 +859,7 @@ def plot_graphs(selectedData, user_input):
     A boolean -- Indicating whether the plot-type-dropdown is disabled or not
     """
 
-    if selectedData is None:
+    if selected_data is None:
         return html.Div(children=[html.P('''Filter events displayed by using the date and magnitude filters.'''),
                                   html.P('''Select an event marker from the map and a plot type from the
                                          dropdown for more event information.''')],
@@ -841,15 +868,16 @@ def plot_graphs(selectedData, user_input):
                                'width': '100%'},
                         className="center"), False
     else:
-        event_id = selectedData['points'][0]['customdata'][8]
+        event_id = selected_data['points'][0]['customdata'][8]
 
-        # print(selectedData['points'][0]['lat'], selectedData['points'][0]['lon'])
-        # print(selectedData, user_input, event_id)
+        # print(selected_data)
+        # print(selected_data['points'][0]['lat'], selected_data['points'][0]['lon'])
+        # print(selected_data, user_input, event_id)
         # print(new_loading_style)
-        # print(selectedData['points'][0]['customdata'][6])
+        # print(selected_data['points'][0]['customdata'][6])
 
         # if DYFI felt is zero
-        if selectedData['points'][0]['customdata'][6] == 0:
+        if selected_data['points'][0]['customdata'][6] == 0:
             # return go.Figure()
             # return select_graph
             # return None
@@ -858,11 +886,11 @@ def plot_graphs(selectedData, user_input):
                                    'border': '1px solid #999', 'display': 'flex', 'flex-direction': 'column'},
                             className="center"), True
         elif event_id and user_input == "Intensity Plot(1km)":
-            return display_intensity_plot_1km(event_id, selectedData), False
+            return display_intensity_plot_1km(event_id, selected_data), False
         elif event_id and user_input == "Intensity Plot(10km)":
-            return display_intensity_plot_10km(event_id, selectedData), False
+            return display_intensity_plot_10km(event_id, selected_data), False
         elif event_id and user_input == "Zip Map":
-            return display_zip_plot(event_id, selectedData), False
+            return display_zip_plot(event_id, selected_data), False
         elif event_id and user_input == "Intensity Vs. Distance":
             return display_intensity_dist_plot(event_id), False
         elif event_id and user_input == "Response Vs. Time":
