@@ -1,2 +1,13 @@
 /.mapbox_token
 /.ycm_extra_conf.py
+/basemap_test.py
+/assets/bWLwgP.css.junk
+/concat_zip_shp.ipynb
+/develop_test_zip_plot.ipynb
+/develop_test_zip_plot_v1.ipynb
+/flask_cache.py
+/data/NC_SC_GA_region_zipcodes.feather
+/data/ny_dyfi_plot_atten.json
+/data/ny_dyfi_plot_numresp.json
+/zip_choro_test.py
+/zipcodes_within.py
