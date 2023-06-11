@@ -43,43 +43,48 @@ ZC_DATA_PATH = Path(r"zipcode_data")
 mapbox_access_token = open(".mapbox_token").read()
 
 # Uncomment this line to display all dataframe columns in the console.
-pd.set_option('display.max_columns', 32)
+pd.set_option("display.max_columns", 32)
 
 event_file = DATA_DIR / "SC_Earthquake.geojson"
 geo_df = gpd.read_file(event_file)
 
-geo_df['Event_Date'] = pd.to_datetime(geo_df.time, unit="ms") \
-    .dt.tz_localize('UTC') \
-    .dt.tz_convert('America/New_York').dt.date
+geo_df["Event_Date"] = (
+    pd.to_datetime(geo_df.time, unit="ms").dt.tz_localize("UTC").dt.tz_convert("America/New_York").dt.date
+)
 
-geo_df['Event_Time'] = pd.to_datetime(geo_df.time, unit="ms") \
-    .dt.tz_localize('UTC') \
-    .dt.tz_convert('America/New_York').dt.time
+geo_df["Event_Time"] = (
+    pd.to_datetime(geo_df.time, unit="ms").dt.tz_localize("UTC").dt.tz_convert("America/New_York").dt.time
+)
 
 # remove decimal portion of the seconds part of the time
-for x in range(len(geo_df['Event_Time'])):
-    geo_df.loc[x, 'Event_Time'] = geo_df['Event_Time'][x].replace(microsecond=0)
+for x in range(len(geo_df["Event_Time"])):
+    geo_df.loc[x, "Event_Time"] = geo_df["Event_Time"][x].replace(microsecond=0)
 
 # Filter dataframe
-geo_df = geo_df[['id', 'mag', 'place', 'detail', 'felt', 'cdi', 'title', 'geometry', 'Event_Date', 'Event_Time']]
-geo_df = geo_df.rename(columns={'mag': 'Mag', 'place': 'Place', 'detail': 'Url', 'felt': 'Felt',
-                                'cdi': 'CDI', 'title': 'Title'})  # , 'geometry': 'Geometry'})
-geo_df.Felt = geo_df.Felt.fillna(0).astype('int')
-geo_df.CDI = geo_df.CDI.fillna(0).astype('float')
-geo_df.Place = geo_df.Place.fillna('No Location')
+geo_df = geo_df[["id", "mag", "place", "detail", "felt", "cdi", "title", "geometry", "Event_Date", "Event_Time"]]
+geo_df = geo_df.rename(
+    columns={"mag": "Mag", "place": "Place", "detail": "Url", "felt": "Felt", "cdi": "CDI", "title": "Title"}
+)  # , 'geometry': 'Geometry'})
+geo_df.Felt = geo_df.Felt.fillna(0).astype("int")
+geo_df.CDI = geo_df.CDI.fillna(0).astype("float")
+geo_df.Place = geo_df.Place.fillna("No Location")
 
-geo_df['Depth'] = geo_df.geometry.z
-geo_df['Mag'] = geo_df.Mag.round(1)
+geo_df["Depth"] = geo_df.geometry.z
+geo_df["Mag"] = geo_df.Mag.round(1)
 
 geo_df = geo_df.copy()
 
 # print(geo_df.head())
 
-blackbold = {'color': 'black', 'font-weight': 'bold'}
+blackbold = {"color": "black", "font-weight": "bold"}
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],
-           meta_tags=[{'name': 'viewport',
-                       'content': 'width=device-width, initial-scale=1.0, maximum-scale=1.2, minimum-scale=0.5,'}])
+app = Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    meta_tags=[
+        {"name": "viewport", "content": "width=device-width, initial-scale=1.0, maximum-scale=1.2, minimum-scale=0.5,"}
+    ],
+)
 server = app.server
 
 
@@ -98,17 +103,19 @@ def determine_zoom_level(longitudes=None, latitudes=None):
 
     # Check whether both latitudes and longitudes have been passed,
     # or if the list lengths don't match
-    if ((latitudes is None or longitudes is None)
-            or (len(latitudes) != len(longitudes))):
+    if (latitudes is None or longitudes is None) or (len(latitudes) != len(longitudes)):
         # Otherwise, return the default values of 0 zoom and the coordinate origin as center point
         return 0, (0, 0)
 
     # Get the boundary-box
-    b_box = {'height': latitudes.max() - latitudes.min(), 'width': longitudes.max() - longitudes.min(),
-             'center': (np.mean(longitudes), np.mean(latitudes))}
+    b_box = {
+        "height": latitudes.max() - latitudes.min(),
+        "width": longitudes.max() - longitudes.min(),
+        "center": (np.mean(longitudes), np.mean(latitudes)),
+    }
 
     # get the area of the bounding box in order to calculate a zoom-level
-    area = b_box['height'] * b_box['width']
+    area = b_box["height"] * b_box["width"]
 
     # * 1D-linear interpolation with numpy:
     # - Pass the area as the only x-value and not as a list, in order to return a scalar as well
@@ -116,17 +123,17 @@ def determine_zoom_level(longitudes=None, latitudes=None):
     # - The zpom-levels are adapted to the areas, i.e. start with the smallest area possible of 0
     # which leads to the highest possible zoom value 20, and so forth decreasing with increasing areas
     # as these variables are antiproportional
-    zoom = np.interp(x=area,
-                     xp=[0, 5 ** -10, 4 ** -10, 3 ** -10, 2 ** -10, 1 ** -10, 1 ** -5],
-                     fp=[20, 15, 14, 13, 12, 7, 5])
+    zoom = np.interp(
+        x=area, xp=[0, 5**-10, 4**-10, 3**-10, 2**-10, 1**-10, 1**-5], fp=[20, 15, 14, 13, 12, 7, 5]
+    )
 
     # Finally, return the zoom level and the associated boundary-box center coordinates
-    return zoom, b_box['center']
+    return zoom, b_box["center"]
 
 
 # graph-plot functions
 def display_intensity_plot_1km(evnt_id, sdata):
-    """ Display 1km spacing choropleth map of earthquake DYFI intensities
+    """Display 1km spacing choropleth map of earthquake DYFI intensities
 
     Plots a 1km spacing choropleth map of the DYFI earthquake intensities for selected event.
 
@@ -151,14 +158,14 @@ def display_intensity_plot_1km(evnt_id, sdata):
 
     with open(filename) as file1:
         cdi_geo_1km_geojson = json.load(file1)
-    cdi_geo_1km_df = pd.json_normalize(cdi_geo_1km_geojson, ['features'])
+    cdi_geo_1km_df = pd.json_normalize(cdi_geo_1km_geojson, ["features"])
 
-    ww = list(cdi_geo_1km_df['properties.nresp'])
-    xx = list(cdi_geo_1km_df['properties.name'])
-    yy = list(cdi_geo_1km_df['properties.cdi'])
-    zz = list(cdi_geo_1km_df['properties.dist'])
+    ww = list(cdi_geo_1km_df["properties.nresp"])
+    xx = list(cdi_geo_1km_df["properties.name"])
+    yy = list(cdi_geo_1km_df["properties.cdi"])
+    zz = list(cdi_geo_1km_df["properties.dist"])
 
-    nh = np.empty(shape=(len(yy), 4, 1), dtype='object')
+    nh = np.empty(shape=(len(yy), 4, 1), dtype="object")
     nh[:, 0] = np.array(xx).reshape(-1, 1)
     nh[:, 1] = np.array(yy).reshape(-1, 1)
     nh[:, 2] = np.array(zz).reshape(-1, 1)
@@ -167,59 +174,96 @@ def display_intensity_plot_1km(evnt_id, sdata):
     # print(cdi_geo_1km_df)
 
     fig = go.Figure()
-    fig.add_trace(go.Choroplethmapbox(geojson=cdi_geo_1km_geojson,
-                                      locations=cdi_geo_1km_df['properties.name'],
-                                      z=cdi_geo_1km_df['properties.cdi'],
-                                      featureidkey='properties.name',
-                                      # subplot="mapbox",
-                                      coloraxis="coloraxis",
-                                      below="", name='',
-                                      customdata=nh,
-                                      hoverlabel={'bgcolor': '#323232'},
-                                      hovertemplate='UTM Geocode/City: %{customdata[0]}<br>' +
-                                                    'Response Count:  %{customdata[3]} -- ' +
-                                                    'CDI: %{customdata[1]} -' + '- Distance %{customdata[2]} km',
-                                      marker=dict(opacity=0.30)))
+    fig.add_trace(
+        go.Choroplethmapbox(
+            geojson=cdi_geo_1km_geojson,
+            locations=cdi_geo_1km_df["properties.name"],
+            z=cdi_geo_1km_df["properties.cdi"],
+            featureidkey="properties.name",
+            # subplot="mapbox",
+            coloraxis="coloraxis",
+            below="",
+            name="",
+            customdata=nh,
+            hoverlabel={"bgcolor": "#323232"},
+            hovertemplate="UTM Geocode/City: %{customdata[0]}<br>"
+            + "Response Count:  %{customdata[3]} -- "
+            + "CDI: %{customdata[1]} -"
+            + "- Distance %{customdata[2]} km",
+            marker=dict(opacity=0.30),
+        )
+    )
 
-    fig.add_trace(go.Scattermapbox(lon=[sdata['points'][0]['lon']],
-                                   lat=[sdata['points'][0]['lat']],
-                                   showlegend=False,
-                                   # subplot="mapbox",
-                                   mode='markers+lines',
-                                   marker={'size': 12, 'opacity': 1, 'symbol': ['star']},
-                                   name='',
-                                   text=[sdata['points'][0]['customdata'][1]],
-                                   hoverlabel={'bgcolor': '#323232'},
-                                   hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>" +
-                                                 "Location -- %{text}"))
+    fig.add_trace(
+        go.Scattermapbox(
+            lon=[sdata["points"][0]["lon"]],
+            lat=[sdata["points"][0]["lat"]],
+            showlegend=False,
+            # subplot="mapbox",
+            mode="markers+lines",
+            marker={"size": 12, "opacity": 1, "symbol": ["star"]},
+            name="",
+            text=[sdata["points"][0]["customdata"][1]],
+            hoverlabel={"bgcolor": "#323232"},
+            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>" + "Location -- %{text}",
+        )
+    )
 
-    fig.update_layout(mapbox=dict(zoom=7.5, style='streets', center={"lat": sdata['points'][0]['lat'],
-                                                                     "lon": sdata['points'][0]['lon']},
-                                  accesstoken=mapbox_access_token),
-                      coloraxis=dict(colorscale='Portland'),
-                      coloraxis_colorbar=dict(orientation='v', lenmode='pixels', len=435, thicknessmode='pixels',
-                                              thickness=10, xanchor='left', x=-0.025, xpad=1, ticks='inside',
-                                              tickcolor='white', title=dict(text='CDI')),
-                      showlegend=False,
-                      paper_bgcolor='#FFDEAD',
-                      hovermode='closest', hoverdistance=5,
-                      title=dict(font=dict(color='#2F4F4F', size=14),
-                                 text='CDI Choropleth Mapbox Plot - 1km Spacing'),
-                      template='ggplot2',
-                      margin={"r": 4, "t": 25, "l": 4, "b": 4})
+    fig.update_layout(
+        mapbox=dict(
+            zoom=7.5,
+            style="streets",
+            center={"lat": sdata["points"][0]["lat"], "lon": sdata["points"][0]["lon"]},
+            accesstoken=mapbox_access_token,
+        ),
+        coloraxis=dict(colorscale="Portland"),
+        coloraxis_colorbar=dict(
+            orientation="v",
+            lenmode="pixels",
+            len=435,
+            thicknessmode="pixels",
+            thickness=10,
+            xanchor="left",
+            x=-0.025,
+            xpad=1,
+            ticks="inside",
+            tickcolor="white",
+            title=dict(text="CDI"),
+        ),
+        showlegend=False,
+        paper_bgcolor="#FFDEAD",
+        hovermode="closest",
+        hoverdistance=5,
+        title=dict(font=dict(color="#2F4F4F", size=14), text="CDI Choropleth Mapbox Plot - 1km Spacing"),
+        template="ggplot2",
+        margin={"r": 4, "t": 25, "l": 4, "b": 4},
+    )
 
-    return html.Div([dcc.Graph(figure=fig,
-                               config={'scrollZoom': True,
-                                       'responsive': True,
-                                       'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d',
-                                                                  'toImage', 'autoScale']},
-                               style={'padding-bottom': '1px', 'padding-top': '2px',
-                                      'padding-left': '1px', 'padding-right': '1px', 'flex-grow': '1',
-                                      'height': '55vh', 'width': '100%'})])
+    return html.Div(
+        [
+            dcc.Graph(
+                figure=fig,
+                config={
+                    "scrollZoom": True,
+                    "responsive": True,
+                    "modeBarButtonsToRemove": ["zoom", "pan", "select", "lasso2d", "toImage", "autoScale"],
+                },
+                style={
+                    "padding-bottom": "1px",
+                    "padding-top": "2px",
+                    "padding-left": "1px",
+                    "padding-right": "1px",
+                    "flex-grow": "1",
+                    "height": "55vh",
+                    "width": "100%",
+                },
+            )
+        ]
+    )
 
 
 def display_intensity_plot_10km(evnt_id, sdata):
-    """ Display 10km spacing choropleth map of earthquake DYFI intensities
+    """Display 10km spacing choropleth map of earthquake DYFI intensities
 
     Plots a 10 km spacing choropleth map of the DYFI earthquake intensities for selected event.
 
@@ -242,76 +286,112 @@ def display_intensity_plot_10km(evnt_id, sdata):
 
     with open(filename) as file2:
         cdi_geo_10km_geojson = json.load(file2)
-    cdi_geo_10km_df = pd.json_normalize(cdi_geo_10km_geojson, ['features'])
+    cdi_geo_10km_df = pd.json_normalize(cdi_geo_10km_geojson, ["features"])
 
     # print(cdi_geo_10km_df)
 
-    ww = list(cdi_geo_10km_df['properties.nresp'])
-    xx = list(cdi_geo_10km_df['properties.name'])
-    yy = list(cdi_geo_10km_df['properties.cdi'])
-    zz = list(cdi_geo_10km_df['properties.dist'])
+    ww = list(cdi_geo_10km_df["properties.nresp"])
+    xx = list(cdi_geo_10km_df["properties.name"])
+    yy = list(cdi_geo_10km_df["properties.cdi"])
+    zz = list(cdi_geo_10km_df["properties.dist"])
 
-    nh = np.empty(shape=(len(yy), 4, 1), dtype='object')
+    nh = np.empty(shape=(len(yy), 4, 1), dtype="object")
     nh[:, 0] = np.array(xx).reshape(-1, 1)
     nh[:, 1] = np.array(yy).reshape(-1, 1)
     nh[:, 2] = np.array(zz).reshape(-1, 1)
     nh[:, 3] = np.array(ww).reshape(-1, 1)
 
     fig = go.Figure()
-    fig.add_trace(go.Choroplethmapbox(geojson=cdi_geo_10km_geojson,
-                                      locations=cdi_geo_10km_df['properties.name'],
-                                      z=cdi_geo_10km_df['properties.cdi'],
-                                      featureidkey='properties.name',
-                                      # subplot="mapbox2",
-                                      coloraxis="coloraxis",
-                                      name='',
-                                      customdata=nh,
-                                      hoverlabel={'bgcolor': '#323232'},
-                                      hovertemplate='UTM Geocode/City: %{customdata[0]}<br>' +
-                                                    'Response Count:  %{customdata[3]} -- ' +
-                                                    'CDI: %{customdata[1]} -' + '- Distance %{customdata[2]} km',
-                                      marker=dict(opacity=0.30)))
+    fig.add_trace(
+        go.Choroplethmapbox(
+            geojson=cdi_geo_10km_geojson,
+            locations=cdi_geo_10km_df["properties.name"],
+            z=cdi_geo_10km_df["properties.cdi"],
+            featureidkey="properties.name",
+            # subplot="mapbox2",
+            coloraxis="coloraxis",
+            name="",
+            customdata=nh,
+            hoverlabel={"bgcolor": "#323232"},
+            hovertemplate="UTM Geocode/City: %{customdata[0]}<br>"
+            + "Response Count:  %{customdata[3]} -- "
+            + "CDI: %{customdata[1]} -"
+            + "- Distance %{customdata[2]} km",
+            marker=dict(opacity=0.30),
+        )
+    )
 
-    fig.add_trace(go.Scattermapbox(lon=[sdata['points'][0]['lon']],
-                                   lat=[sdata['points'][0]['lat']],
-                                   showlegend=False,
-                                   # subplot="mapbox2",
-                                   mode='markers+lines',
-                                   marker={'size': 12, 'opacity': 1, 'symbol': ['star']},
-                                   name='',
-                                   text=[sdata['points'][0]['customdata'][1]],
-                                   hoverlabel={'bgcolor': '#323232'},
-                                   hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>" +
-                                                 "Location -- %{text}"))
+    fig.add_trace(
+        go.Scattermapbox(
+            lon=[sdata["points"][0]["lon"]],
+            lat=[sdata["points"][0]["lat"]],
+            showlegend=False,
+            # subplot="mapbox2",
+            mode="markers+lines",
+            marker={"size": 12, "opacity": 1, "symbol": ["star"]},
+            name="",
+            text=[sdata["points"][0]["customdata"][1]],
+            hoverlabel={"bgcolor": "#323232"},
+            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>" + "Location -- %{text}",
+        )
+    )
 
-    fig.update_layout(mapbox=dict(zoom=7.5, style='streets', center={"lat": sdata['points'][0]['lat'],
-                                                                     "lon": sdata['points'][0]['lon']},
-                                  accesstoken=mapbox_access_token),
-                      # coloraxis=dict(colorscale='Plotly3'),
-                      coloraxis=dict(colorscale='Portland'),
-                      coloraxis_colorbar=dict(orientation='v', lenmode='pixels', len=435, thicknessmode='pixels',
-                                              thickness=10, xanchor='left', x=-0.025, xpad=1, ticks='inside',
-                                              tickcolor='white', title=dict(text='CDI')),
-                      showlegend=False,
-                      paper_bgcolor='#FFDEAD',
-                      hovermode='closest', hoverdistance=5,
-                      title=dict(font=dict(color='#2F4F4F', size=14),
-                                 text='CDI Choropleth Mapbox Plot - 10km Spacing'),
-                      template='ggplot2',
-                      margin={"r": 4, "t": 25, "l": 4, "b": 4})
+    fig.update_layout(
+        mapbox=dict(
+            zoom=7.5,
+            style="streets",
+            center={"lat": sdata["points"][0]["lat"], "lon": sdata["points"][0]["lon"]},
+            accesstoken=mapbox_access_token,
+        ),
+        # coloraxis=dict(colorscale='Plotly3'),
+        coloraxis=dict(colorscale="Portland"),
+        coloraxis_colorbar=dict(
+            orientation="v",
+            lenmode="pixels",
+            len=435,
+            thicknessmode="pixels",
+            thickness=10,
+            xanchor="left",
+            x=-0.025,
+            xpad=1,
+            ticks="inside",
+            tickcolor="white",
+            title=dict(text="CDI"),
+        ),
+        showlegend=False,
+        paper_bgcolor="#FFDEAD",
+        hovermode="closest",
+        hoverdistance=5,
+        title=dict(font=dict(color="#2F4F4F", size=14), text="CDI Choropleth Mapbox Plot - 10km Spacing"),
+        template="ggplot2",
+        margin={"r": 4, "t": 25, "l": 4, "b": 4},
+    )
 
-    return html.Div([dcc.Graph(figure=fig,
-                               config={'scrollZoom': True,
-                                       'responsive': True,
-                                       'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d',
-                                                                  'toImage', 'autoScale']},
-                               style={'padding-bottom': '1px', 'padding-top': '2px',
-                                      'padding-left': '1px', 'padding-right': '1px', 'flex-grow': '1',
-                                      'height': '55vh', 'width': '100%'})])
+    return html.Div(
+        [
+            dcc.Graph(
+                figure=fig,
+                config={
+                    "scrollZoom": True,
+                    "responsive": True,
+                    "modeBarButtonsToRemove": ["zoom", "pan", "select", "lasso2d", "toImage", "autoScale"],
+                },
+                style={
+                    "padding-bottom": "1px",
+                    "padding-top": "2px",
+                    "padding-left": "1px",
+                    "padding-right": "1px",
+                    "flex-grow": "1",
+                    "height": "55vh",
+                    "width": "100%",
+                },
+            )
+        ]
+    )
 
 
 def display_zip_plot(evnt_id, sdata):
-    """ Display a zipcode choropleth map of the earthquake DYFI intensities.
+    """Display a zipcode choropleth map of the earthquake DYFI intensities.
 
     Plot a zipcode choropleth map of the DYFI reported intensities of the earthquake event.
 
@@ -330,90 +410,124 @@ def display_zip_plot(evnt_id, sdata):
     """
     filename = DATA_DIR / evnt_id / "cdi_zip.csv"
     cdi_zip_df = pd.read_csv(filename)
-    cdi_zip_df.rename({'# Columns: ZIP/Location': 'ZIP/Location'}, axis=1, inplace=True)
+    cdi_zip_df.rename({"# Columns: ZIP/Location": "ZIP/Location"}, axis=1, inplace=True)
 
     # Using NC, SC, & GA region zipcodes instead of just SC
     # zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.geojson"
     # Used parquet file format for the zip code file because it is read in faster; geojson file read is way too slow
 
     zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.parquet"
-    sc_zip_df = gpd.read_parquet(zc_filename, columns=['geometry', 'ZCTA5CE10'])
+    sc_zip_df = gpd.read_parquet(zc_filename, columns=["geometry", "ZCTA5CE10"])
 
-    cdi_zip_df['ZIP/Location'] = cdi_zip_df[['ZIP/Location']].astype('str')
-    sc_zip_df['ZCTA5CE10'] = sc_zip_df[['ZCTA5CE10']].astype('str')
+    cdi_zip_df["ZIP/Location"] = cdi_zip_df[["ZIP/Location"]].astype("str")
+    sc_zip_df["ZCTA5CE10"] = sc_zip_df[["ZCTA5CE10"]].astype("str")
 
     df = cdi_zip_df.copy()
-    geo_dff = gpd.GeoDataFrame(sc_zip_df).merge(df,
-                                                left_on="ZCTA5CE10",
-                                                right_on='ZIP/Location').set_index('ZIP/Location')
+    geo_dff = (
+        gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="ZCTA5CE10", right_on="ZIP/Location").set_index("ZIP/Location")
+    )
 
     state_zip_json = json.loads(geo_dff.to_json())
 
-    ww = list(df['CDI'])
-    xx = list(df['ZIP/Location'])
-    yy = list(df['Response_Count'])
-    zz = list(df['Hypocentral_Distance'])
+    ww = list(df["CDI"])
+    xx = list(df["ZIP/Location"])
+    yy = list(df["Response_Count"])
+    zz = list(df["Hypocentral_Distance"])
 
-    nh = np.empty(shape=(len(yy), 4, 1), dtype='object')
+    nh = np.empty(shape=(len(yy), 4, 1), dtype="object")
     nh[:, 0] = np.array(xx).reshape(-1, 1)
     nh[:, 1] = np.array(yy).reshape(-1, 1)
     nh[:, 2] = np.array(zz).reshape(-1, 1)
     nh[:, 3] = np.array(ww).reshape(-1, 1)
 
     fig = go.Figure()
-    fig.add_trace(go.Choroplethmapbox(geojson=state_zip_json, locations=df['ZIP/Location'], z=df['CDI'],
-                                      featureidkey='properties.ZCTA5CE10',
-                                      marker={'opacity': 0.3, 'line_width': 0},
-                                      showscale=True,
-                                      coloraxis="coloraxis",
-                                      name='',
-                                      customdata=nh,
-                                      hoverlabel={'bgcolor': '#323232'},
-                                      hovertemplate="ZIP/Postal Code:  %{customdata[0]}<br>" +
-                                                    "Responses:  %{customdata[1]}<br>" +
-                                                    "CDI:  %{customdata[3]}" + " -- Distance:  %{customdata[2]} km",
-                                      ))
+    fig.add_trace(
+        go.Choroplethmapbox(
+            geojson=state_zip_json,
+            locations=df["ZIP/Location"],
+            z=df["CDI"],
+            featureidkey="properties.ZCTA5CE10",
+            marker={"opacity": 0.3, "line_width": 0},
+            showscale=True,
+            coloraxis="coloraxis",
+            name="",
+            customdata=nh,
+            hoverlabel={"bgcolor": "#323232"},
+            hovertemplate="ZIP/Postal Code:  %{customdata[0]}<br>"
+            + "Responses:  %{customdata[1]}<br>"
+            + "CDI:  %{customdata[3]}"
+            + " -- Distance:  %{customdata[2]} km",
+        )
+    )
 
-    fig.add_trace(go.Scattermapbox(lon=[sdata['points'][0]['lon']],
-                                   lat=[sdata['points'][0]['lat']],
-                                   mode='markers+lines',
-                                   marker={'size': 10, 'symbol': ['star']},
-                                   name='',
-                                   text=[sdata['points'][0]['customdata'][1]],
-                                   hoverlabel={'bgcolor': '#323232'},
-                                   hovertemplate='Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>' +
-                                                 "Location -- %{text}"))
+    fig.add_trace(
+        go.Scattermapbox(
+            lon=[sdata["points"][0]["lon"]],
+            lat=[sdata["points"][0]["lat"]],
+            mode="markers+lines",
+            marker={"size": 10, "symbol": ["star"]},
+            name="",
+            text=[sdata["points"][0]["customdata"][1]],
+            hoverlabel={"bgcolor": "#323232"},
+            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>" + "Location -- %{text}",
+        )
+    )
 
-    fig.update_layout(mapbox_style="streets",  # "open-street-map",
-                      mapbox_zoom=7.5, mapbox_center={"lat": sdata['points'][0]['lat'],
-                                                      "lon": sdata['points'][0]['lon']},
-                      mapbox=dict(accesstoken=mapbox_access_token),
-                      autosize=True,
-                      margin={"r": 4, "t": 25, "l": 4, "b": 4},
-                      template='ggplot2',
-                      title=dict(font=dict(color='#2F4F4F'), text="Zipcode CDI Choropleth Map"),
-                      paper_bgcolor='#FFDEAD',
-                      hovermode='closest', hoverdistance=3,
-                      coloraxis=dict(colorscale='Portland'),
-                      coloraxis_colorbar=dict(orientation='v', lenmode='pixels', len=435, thicknessmode='pixels',
-                                              thickness=10, xanchor='left', x=-0.025, xpad=1, ticks='inside',
-                                              tickcolor='white', title=dict(text='CDI')),
-                      showlegend=False,
-                      )
+    fig.update_layout(
+        mapbox_style="streets",  # "open-street-map",
+        mapbox_zoom=7.5,
+        mapbox_center={"lat": sdata["points"][0]["lat"], "lon": sdata["points"][0]["lon"]},
+        mapbox=dict(accesstoken=mapbox_access_token),
+        autosize=True,
+        margin={"r": 4, "t": 25, "l": 4, "b": 4},
+        template="ggplot2",
+        title=dict(font=dict(color="#2F4F4F"), text="Zipcode CDI Choropleth Map"),
+        paper_bgcolor="#FFDEAD",
+        hovermode="closest",
+        hoverdistance=3,
+        coloraxis=dict(colorscale="Portland"),
+        coloraxis_colorbar=dict(
+            orientation="v",
+            lenmode="pixels",
+            len=435,
+            thicknessmode="pixels",
+            thickness=10,
+            xanchor="left",
+            x=-0.025,
+            xpad=1,
+            ticks="inside",
+            tickcolor="white",
+            title=dict(text="CDI"),
+        ),
+        showlegend=False,
+    )
     # return fig
-    return html.Div([dcc.Graph(figure=fig,
-                               config={'scrollZoom': True,
-                                       'responsive': True,
-                                       'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d',
-                                                                  'toImage', 'autoScale']},
-                               style={'padding-bottom': '1px', 'padding-top': '2px',
-                                      'padding-left': '1px', 'padding-right': '1px', 'flex-grow': '1',
-                                      'height': '55vh', 'width': '100%'})],
-                    style={'width': '100%'})
+    return html.Div(
+        [
+            dcc.Graph(
+                figure=fig,
+                config={
+                    "scrollZoom": True,
+                    "responsive": True,
+                    "modeBarButtonsToRemove": ["zoom", "pan", "select", "lasso2d", "toImage", "autoScale"],
+                },
+                style={
+                    "padding-bottom": "1px",
+                    "padding-top": "2px",
+                    "padding-left": "1px",
+                    "padding-right": "1px",
+                    "flex-grow": "1",
+                    "height": "55vh",
+                    "width": "100%",
+                },
+            )
+        ],
+        style={"width": "100%"},
+    )
 
 
 def display_intensity_dist_plot(evnt_id):
-    """ Display a graph of the event's DYFI reported intensities vs. hypo-central distance from the event.
+    """Display a graph of the event's DYFI reported intensities vs. hypo-central distance from the event.
 
     Plot a graph figure that contains a graph indicating various intensity vs. distance statistics.
       First -- Every DYFI intensity reported vs. hypo-central distance
@@ -445,47 +559,73 @@ def display_intensity_dist_plot(evnt_id):
     for dsi in range(len(intensity_dist_df)):
         dataset_df = pd.DataFrame(intensity_dist_df.datasets[dsi])
         # print(dataset_df)
-        if dataset_df['class'][0] == 'scatterplot1':
+        if dataset_df["class"][0] == "scatterplot1":
             sct_plt_df = dataset_df.from_records(data=dataset_df.data)
             xi = list(sct_plt_df.x)
             yi = list(sct_plt_df.y)
             ylabel = intensity_dist_df.ylabel[0]
 
-            fig.add_trace(go.Scatter(x=xi, y=yi, mode='markers', marker=dict(color='rgb(148, 223, 234)', size=6),
-                                     name='All Reported Data', customdata=xi, text=yi,
-                                     hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" +
-                                                   "CDI:  %{text}"))
+            fig.add_trace(
+                go.Scatter(
+                    x=xi,
+                    y=yi,
+                    mode="markers",
+                    marker=dict(color="rgb(148, 223, 234)", size=6),
+                    name="All Reported Data",
+                    customdata=xi,
+                    text=yi,
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" + "CDI:  %{text}",
+                )
+            )
             fig.update_yaxes(title_text=ylabel, range=[0, 10])
-            fig.update_layout(yaxis=dict(tickvals=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], fixedrange=True),
-                              title_text="Intensity Vs. Distance",
-                              plot_bgcolor='#FAEBD7', paper_bgcolor='#FFDEAD')
+            fig.update_layout(
+                yaxis=dict(tickvals=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], fixedrange=True),
+                title_text="Intensity Vs. Distance",
+                plot_bgcolor="#FAEBD7",
+                paper_bgcolor="#FFDEAD",
+            )
 
-        elif dataset_df['class'][0] == 'estimated1':
+        elif dataset_df["class"][0] == "estimated1":
             est_plt_df = dataset_df.from_records(data=dataset_df.data)
             xi = list(est_plt_df.x)
             yi = list(est_plt_df.y)
-            name = dataset_df['legend'][0]
+            name = dataset_df["legend"][0]
 
-            fig.add_trace(go.Scatter(x=xi, y=yi, name=name, mode='lines+markers', line=dict(color='rgb(214, 86, 23)',
-                                                                                            width=2),
-                                     marker=dict(color='rgb(214, 86, 23)', size=6),
-                                     customdata=xi, text=yi,
-                                     hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" +
-                                                   "Estimated CDI:  %{text:.2f}"))
+            fig.add_trace(
+                go.Scatter(
+                    x=xi,
+                    y=yi,
+                    name=name,
+                    mode="lines+markers",
+                    line=dict(color="rgb(214, 86, 23)", width=2),
+                    marker=dict(color="rgb(214, 86, 23)", size=6),
+                    customdata=xi,
+                    text=yi,
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" + "Estimated CDI:  %{text:.2f}",
+                )
+            )
 
-        elif dataset_df['class'][0] == 'estimated2':
+        elif dataset_df["class"][0] == "estimated2":
             est_plt_df = dataset_df.from_records(data=dataset_df.data)
             xi = list(est_plt_df.x)
             yi = list(est_plt_df.y)
-            name = dataset_df['legend'][0]
+            name = dataset_df["legend"][0]
 
-            fig.add_trace(go.Scatter(x=xi, y=yi, name=name, mode='lines+markers', line=dict(color='orange', width=2),
-                                     marker=dict(color='orange', size=6),
-                                     customdata=xi, text=yi,
-                                     hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" +
-                                                   "Estimated CDI:  %{text:.2f}"))
+            fig.add_trace(
+                go.Scatter(
+                    x=xi,
+                    y=yi,
+                    name=name,
+                    mode="lines+markers",
+                    line=dict(color="orange", width=2),
+                    marker=dict(color="orange", size=6),
+                    customdata=xi,
+                    text=yi,
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" + "Estimated CDI:  %{text:.2f}",
+                )
+            )
 
-        elif dataset_df['class'][0] == 'binned':
+        elif dataset_df["class"][0] == "binned":
             mean_plt_df = dataset_df.from_records(data=dataset_df.data)
 
             # print(mean_plt_df)
@@ -495,7 +635,7 @@ def display_intensity_dist_plot(evnt_id):
             yerr = mean_plt_df.stdev
             xlabel = intensity_dist_df.xlabel[0]
             ylabel = intensity_dist_df.ylabel[0]
-            name = dataset_df['legend'][0]
+            name = dataset_df["legend"][0]
 
             xx = list(mean_plt_df.x)
             yy = list(mean_plt_df.y)
@@ -505,60 +645,84 @@ def display_intensity_dist_plot(evnt_id):
             nk[:, 1] = np.array(yy).reshape(-1, 1)
             nk[:, 2] = np.array(yyerr).reshape(-1, 1)
 
-            fig.add_trace(go.Scatter(x=xi, y=yi, name=name,
-                                     error_y=dict(type='data', array=yerr, color='rgb(141, 145, 235)', visible=True),
-                                     mode='markers',
-                                     marker=dict(color='rgb(141, 145, 235)', size=6),
-                                     customdata=nk,
-                                     hovertemplate="Hypocentral Dist. (km):  %{customdata[0]}<br>" +
-                                                   "Mean CDI:  %{customdata[1]:.1f}<br>" +
-                                                   "Std. Dev. %{customdata[2]:.2f}"))
+            fig.add_trace(
+                go.Scatter(
+                    x=xi,
+                    y=yi,
+                    name=name,
+                    error_y=dict(type="data", array=yerr, color="rgb(141, 145, 235)", visible=True),
+                    mode="markers",
+                    marker=dict(color="rgb(141, 145, 235)", size=6),
+                    customdata=nk,
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata[0]}<br>"
+                    + "Mean CDI:  %{customdata[1]:.1f}<br>"
+                    + "Std. Dev. %{customdata[2]:.2f}",
+                )
+            )
             fig.update_xaxes(title_text=xlabel)
             fig.update_yaxes(title_text=ylabel)
 
-        elif dataset_df['class'][0] == 'median':
+        elif dataset_df["class"][0] == "median":
             median_plt_df = dataset_df.from_records(data=dataset_df.data)
             xi = median_plt_df.x  # Distance
             yi = median_plt_df.y  # CDI
             xlabel = intensity_dist_df.xlabel[0]
-            name = dataset_df['legend'][0]
+            name = dataset_df["legend"][0]
 
-            fig.add_trace(go.Scatter(x=xi, y=yi, mode='markers', name=name,
-                                     marker=dict(color='rgb(254, 77, 85)', size=6),
-                                     customdata=xi, text=yi,
-                                     hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" +
-                                                   "Median CDI:  %{text}"))
+            fig.add_trace(
+                go.Scatter(
+                    x=xi,
+                    y=yi,
+                    mode="markers",
+                    name=name,
+                    marker=dict(color="rgb(254, 77, 85)", size=6),
+                    customdata=xi,
+                    text=yi,
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" + "Median CDI:  %{text}",
+                )
+            )
             fig.update_xaxes(title_text=xlabel, range=[0, max(xi)])
 
-    fig.update_layout(margin={"r": 4, "t": 25, "l": 4, "b": 4},
-                      legend=dict(orientation='v', x=1, y=1.0, xanchor='right',
-                                  bordercolor='Black', borderwidth=1.0))
+    fig.update_layout(
+        margin={"r": 4, "t": 25, "l": 4, "b": 4},
+        legend=dict(orientation="v", x=1, y=1.0, xanchor="right", bordercolor="Black", borderwidth=1.0),
+    )
     # return fig
-    return html.Div([dcc.Graph(figure=fig,
-                               config={'scrollZoom': True,
-                                       'responsive': True,
-                                       'displayModeBar': False},
-                               style={'padding-bottom': '1px', 'padding-top': '2px',
-                                      'padding-left': '1px', 'padding-right': '1px', 'flex-grow': '1',
-                                      'height': '55vh', 'width': '100%'})])
+    return html.Div(
+        [
+            dcc.Graph(
+                figure=fig,
+                config={"scrollZoom": True, "responsive": True, "displayModeBar": False},
+                style={
+                    "padding-bottom": "1px",
+                    "padding-top": "2px",
+                    "padding-left": "1px",
+                    "padding-right": "1px",
+                    "flex-grow": "1",
+                    "height": "55vh",
+                    "width": "100%",
+                },
+            )
+        ]
+    )
 
 
 def display_response_time_plot(evnt_id):
-    """ Display a line graph of DYFI number of responses vs. time since earthquake event.
+    """Display a line graph of DYFI number of responses vs. time since earthquake event.
 
-     Plot a figure that displays a line graph showing the DYFI number of responses vs. time since earthquake.
+    Plot a figure that displays a line graph showing the DYFI number of responses vs. time since earthquake.
 
-     Parameters
-     ----------
-     evnt_id : String
-         The USGS.gov id string for the earthquake event.
+    Parameters
+    ----------
+    evnt_id : String
+        The USGS.gov id string for the earthquake event.
 
-     Returns
-     -------
-     html.Div which contains a dcc.Graph which contains the graph figure
-         fig -- A figure containing a line graph of responses vs. time.
+    Returns
+    -------
+    html.Div which contains a dcc.Graph which contains the graph figure
+        fig -- A figure containing a line graph of responses vs. time.
 
-     """
+    """
 
     filename = DATA_DIR / evnt_id / "dyfi_plot_numresp.json"
     resp_time_df = pd.read_json(filename)
@@ -577,30 +741,48 @@ def display_response_time_plot(evnt_id):
     title = resp_time_df.title[0]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=xi, y=yi, mode='lines+markers', line=dict(color='green', width=2),
-                             marker=dict(color='green', size=6),
-                             hovertemplate='Responses:  %{y}<br>' +
-                                           'Time Since Event:  %{x}<extra></extra>'))
+    fig.add_trace(
+        go.Scatter(
+            x=xi,
+            y=yi,
+            mode="lines+markers",
+            line=dict(color="green", width=2),
+            marker=dict(color="green", size=6),
+            hovertemplate="Responses:  %{y}<br>" + "Time Since Event:  %{x}<extra></extra>",
+        )
+    )
     fig.update_xaxes(title_text=xlabel)
     fig.update_yaxes(title_text=ylabel)
 
-    fig.update_layout(title_text=title,
-                      plot_bgcolor='#FAEBD7',
-                      paper_bgcolor='#FFDEAD',
-                      template='ggplot2',
-                      margin={"r": 4, "t": 25, "l": 4, "b": 4})
+    fig.update_layout(
+        title_text=title,
+        plot_bgcolor="#FAEBD7",
+        paper_bgcolor="#FFDEAD",
+        template="ggplot2",
+        margin={"r": 4, "t": 25, "l": 4, "b": 4},
+    )
 
-    return html.Div([dcc.Graph(figure=fig,
-                               config={'scrollZoom': False,
-                                       'responsive': True,
-                                       'displayModeBar': False},
-                               style={'padding-bottom': '1px', 'padding-top': '2px',
-                                      'padding-left': '1px', 'padding-right': '1px', 'flex-grow': '1',
-                                      'height': '55vh', 'width': '100%'})])
+    return html.Div(
+        [
+            dcc.Graph(
+                figure=fig,
+                config={"scrollZoom": False, "responsive": True, "displayModeBar": False},
+                style={
+                    "padding-bottom": "1px",
+                    "padding-top": "2px",
+                    "padding-left": "1px",
+                    "padding-right": "1px",
+                    "flex-grow": "1",
+                    "height": "55vh",
+                    "width": "100%",
+                },
+            )
+        ]
+    )
 
 
 def display_dyfi_responses_tbl(evnt_id):
-    """ Display a table of the DYFI responses information.
+    """Display a table of the DYFI responses information.
 
     Display a table of DYFI responses based on zipcode which shows the CDI intensity value, number of responses for that
     location, distance, latitude, and longitude.
@@ -623,9 +805,7 @@ def display_dyfi_responses_tbl(evnt_id):
 
     # table = dbc.Table.from_dataframe(dyfi_responses_df, striped=True, bordered=True, hover=True)  #, responsive=True)
 
-    table_header = [
-        html.Thead(html.Tr([html.Th(i) for i in dyfi_responses_df.columns]))
-    ]
+    table_header = [html.Thead(html.Tr([html.Th(i) for i in dyfi_responses_df.columns]))]
 
     table_body = [
         html.Tbody([html.Tr([html.Td(str(c)) for c in r]) for r in dyfi_responses_df.to_records(index=False)])
@@ -635,129 +815,227 @@ def display_dyfi_responses_tbl(evnt_id):
 
     return html.Div(table, className="table-bordered table-responsive table-wrapper")
 
+
 # Application html layout structure
 
 
-app.layout = dbc.Container([
-    dbc.Row(children=[
-        # Column for user controls
-        dbc.Col(children=[html.Div(className="div-user-controls",
-                                   children=[
-                                       html.A(html.Img(className="logo",
-                                                       src=app.get_asset_url("dash-logo-new.png")),
-                                              href="https://plotly.com/dash/"
-                                              ),
-                                       html.H3("DASH - EARTHQUAKE DATA APP", style={'color': 'SteelBlue'}),
-                                       dbc.Label("""Date Range Filter"""),
-                                       # className="div-for-dropdown",
-                                       html.Div(children=[
-                                           html.Div(dcc.DatePickerRange(id="my-date-picker-range",
-                                                                        calendar_orientation='horizontal',
-                                                                        min_date_allowed=dt(2021, 12, 1),
-                                                                        max_date_allowed=date.today(),
-                                                                        initial_visible_month=dt(2021, 12, 1),
-                                                                        start_date=dt(2021, 12, 1).date(),
-                                                                        end_date=date.today(),
-                                                                        display_format="MM-DD-Y",
-                                                                        updatemode='bothdates')
-                                                    ),
-                                           html.Label('Min./Max. Magnitude Filter'),
-                                           html.Div(children=[
-                                               dbc.Input(id="min-mag-input",
-                                                         type="number", min=1, max=10, step=0.5,
-                                                         size="md",
-                                                         placeholder="Min.",
-                                                         debounce=True,
-                                                         value=1,
-                                                         autofocus=True,
-                                                         n_submit=0,
-                                                         n_blur=0,
-                                                         style={"width": "21.5%"}),
-                                               dbc.Input(id="max-mag-input",
-                                                         type="number", min=1, max=10, step=0.5,
-                                                         size="md",
-                                                         placeholder="Max.",
-                                                         debounce=True,
-                                                         value=10,
-                                                         n_submit=0,
-                                                         n_blur=0,
-                                                         style={"width": "21.5%"}),
-                                           ], style={'display': 'flex'}
-                                           ),
-                                           html.Label("Plot Type"),
-                                           dcc.Dropdown(id='plot-type-dropdown',
-                                                        options=['Intensity Plot(1km)', 'Intensity Plot(10km)',
-                                                                 'Zip Map',
-                                                                 'Intensity Vs. Distance', 'Response Vs. Time',
-                                                                 'DYFI Responses'],
-                                                        value='Intensity Plot(10km)',
-                                                        clearable=False,
-                                                        searchable=False,
-                                                        multi=False,
-                                                        disabled=False,
-                                                        style={"width": '77%'}),  # 65%
-                                       ]),
-                                   ]),
-                          ], xs=11, sm=8, md=6, lg=2, xl=4
-                ),
-        # Column for map-graph
-        dbc.Col(children=[html.Div(  # className="eight columns",
+app.layout = dbc.Container(
+    [
+        dbc.Row(
             children=[
-                dcc.Graph(id="map-graph",
-                          config={  # 'displayModeBar': True,
-                              'scrollZoom': True,
-                              'responsive': True,
-                              'modeBarButtonsToRemove': ['zoom', 'pan', 'select', 'lasso2d',
-                                                         'toImage']},
-                          style={'padding-bottom': '2px', 'padding-top': '4px',
-                                 'padding-left': '2px', 'padding-right': '2px',
-                                 'height': '45vh', 'width': '100%'}
-                          ),
-            ],
-        )
-        ], xs=12, sm=8, md=6, lg=2, xl=8),
-    ]),
-    # Row & Column for the graph-plot
-    dbc.Row(children=[
-        dbc.Col(children=[html.Div(children=[dcc.Loading(id="loading", children=[html.Div(id="graph-plot")],
-                                                         type='default')],
-                                   style={'align-self': 'center'}),
-                          ], xs=12, sm=8, md=12, lg=10, xl={'offset': 4, 'size': 8},
+                # Column for user controls
+                dbc.Col(
+                    children=[
+                        html.Div(
+                            className="div-user-controls",
+                            children=[
+                                html.A(
+                                    html.Img(className="logo", src=app.get_asset_url("dash-logo-new.png")),
+                                    href="https://plotly.com/dash/",
+                                ),
+                                html.H3("DASH - EARTHQUAKE DATA APP", style={"color": "SteelBlue"}),
+                                dbc.Label("""Date Range Filter"""),
+                                # className="div-for-dropdown",
+                                html.Div(
+                                    children=[
+                                        html.Div(
+                                            dcc.DatePickerRange(
+                                                id="my-date-picker-range",
+                                                calendar_orientation="horizontal",
+                                                min_date_allowed=dt(2021, 12, 1),
+                                                max_date_allowed=date.today(),
+                                                initial_visible_month=dt(2021, 12, 1),
+                                                start_date=dt(2021, 12, 1).date(),
+                                                end_date=date.today(),
+                                                display_format="MM-DD-Y",
+                                                updatemode="bothdates",
+                                            )
+                                        ),
+                                        html.Label("Min./Max. Magnitude Filter"),
+                                        html.Div(
+                                            children=[
+                                                dbc.Input(
+                                                    id="min-mag-input",
+                                                    type="number",
+                                                    min=1,
+                                                    max=10,
+                                                    step=0.5,
+                                                    size="md",
+                                                    placeholder="Min.",
+                                                    debounce=True,
+                                                    value=1,
+                                                    autofocus=True,
+                                                    n_submit=0,
+                                                    n_blur=0,
+                                                    style={"width": "21.5%"},
+                                                ),
+                                                dbc.Input(
+                                                    id="max-mag-input",
+                                                    type="number",
+                                                    min=1,
+                                                    max=10,
+                                                    step=0.5,
+                                                    size="md",
+                                                    placeholder="Max.",
+                                                    debounce=True,
+                                                    value=10,
+                                                    n_submit=0,
+                                                    n_blur=0,
+                                                    style={"width": "21.5%"},
+                                                ),
+                                            ],
+                                            style={"display": "flex"},
+                                        ),
+                                        html.Label("Plot Type"),
+                                        dcc.Dropdown(
+                                            id="plot-type-dropdown",
+                                            options=[
+                                                "Intensity Plot(1km)",
+                                                "Intensity Plot(10km)",
+                                                "Zip Map",
+                                                "Intensity Vs. Distance",
+                                                "Response Vs. Time",
+                                                "DYFI Responses",
+                                            ],
+                                            value="Intensity Plot(10km)",
+                                            clearable=False,
+                                            searchable=False,
+                                            multi=False,
+                                            disabled=False,
+                                            style={"width": "77%"},
+                                        ),  # 65%
+                                    ]
+                                ),
+                            ],
+                        ),
+                    ],
+                    xs=11,
+                    sm=8,
+                    md=6,
+                    lg=2,
+                    xl=4,
+                ),
+                # Column for map-graph
+                dbc.Col(
+                    children=[
+                        html.Div(  # className="eight columns",
+                            children=[
+                                dcc.Graph(
+                                    id="map-graph",
+                                    config={  # 'displayModeBar': True,
+                                        "scrollZoom": True,
+                                        "responsive": True,
+                                        "modeBarButtonsToRemove": ["zoom", "pan", "select", "lasso2d", "toImage"],
+                                    },
+                                    style={
+                                        "padding-bottom": "2px",
+                                        "padding-top": "4px",
+                                        "padding-left": "2px",
+                                        "padding-right": "2px",
+                                        "height": "45vh",
+                                        "width": "100%",
+                                    },
+                                ),
+                            ],
+                        )
+                    ],
+                    xs=12,
+                    sm=8,
+                    md=6,
+                    lg=2,
+                    xl=8,
+                ),
+            ]
+        ),
+        # Row & Column for the graph-plot
+        dbc.Row(
+            children=[
+                dbc.Col(
+                    children=[
+                        html.Div(
+                            children=[dcc.Loading(id="loading", children=[html.Div(id="graph-plot")], type="default")],
+                            style={"align-self": "center"},
+                        ),
+                    ],
+                    xs=12,
+                    sm=8,
+                    md=12,
+                    lg=10,
+                    xl={"offset": 4, "size": 8},
                 )
-    ]),
-    # This section needs a better looking style
-    # Row for Links and Information
-    dbc.Row(style={'margin-top': '12px', 'margin-bottom': '10px'}, children=[
-        dbc.Col(width=12, children=[
-            dbc.Row(children=[
-                dbc.Col(width={'size': 10, 'offset': 2}, children=[
-                    html.P('Data Provided By'),
-                    html.Div(children=[dcc.Link('U.S. Geological Survey - USAGov',
-                                                href='https://www.usgs.gov/earthquake')]),
-                    html.Div(children=[dcc.Link('U.S. Census Bureau',
-                                                href='https://www.census.gov/')])
-                ]),
-                dbc.Col(width={'size': 10, 'offset': 2}, children=[
-                    html.P('Contact'),
-                    html.Div(children=[dcc.Link('mick.the.linux.geek@hotmail.com',
-                                                href='mailto:mick.the.linuk.geek@hotmail.com')]),
-                    html.Div(children=[dcc.Link('Mastodon',
-                                                href='https://mastodon.online/@mickthelinuxgeek')])
-                ]),
-            ])
-        ], xs=12, sm=8, md=12, lg=10, xl=8)
-    ])
-], fluid=True)
+            ]
+        ),
+        # This section needs a better looking style
+        # Row for Links and Information
+        dbc.Row(
+            style={"margin-top": "12px", "margin-bottom": "10px"},
+            children=[
+                dbc.Col(
+                    width=12,
+                    children=[
+                        dbc.Row(
+                            children=[
+                                dbc.Col(
+                                    width={"size": 10, "offset": 2},
+                                    children=[
+                                        html.P("Data Provided By"),
+                                        html.Div(
+                                            children=[
+                                                dcc.Link(
+                                                    "U.S. Geological Survey - USAGov",
+                                                    href="https://www.usgs.gov/earthquake",
+                                                )
+                                            ]
+                                        ),
+                                        html.Div(
+                                            children=[dcc.Link("U.S. Census Bureau", href="https://www.census.gov/")]
+                                        ),
+                                    ],
+                                ),
+                                dbc.Col(
+                                    width={"size": 10, "offset": 2},
+                                    children=[
+                                        html.P("Contact"),
+                                        html.Div(
+                                            children=[
+                                                dcc.Link(
+                                                    "mick.the.linux.geek@hotmail.com",
+                                                    href="mailto:mick.the.linuk.geek@hotmail.com",
+                                                )
+                                            ]
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                dcc.Link("Mastodon", href="https://mastodon.online/@mickthelinuxgeek")
+                                            ]
+                                        ),
+                                    ],
+                                ),
+                            ]
+                        )
+                    ],
+                    xs=12,
+                    sm=8,
+                    md=12,
+                    lg=10,
+                    xl=8,
+                )
+            ],
+        ),
+    ],
+    fluid=True,
+)
 
 
 @app.callback(
-    Output('map-graph', 'figure'),
-    Input('my-date-picker-range', 'start_date'),
-    Input('my-date-picker-range', 'end_date'),
-    Input('min-mag-input', 'value'),
-    Input('max-mag-input', 'value'))
+    Output("map-graph", "figure"),
+    Input("my-date-picker-range", "start_date"),
+    Input("my-date-picker-range", "end_date"),
+    Input("min-mag-input", "value"),
+    Input("max-mag-input", "value"),
+)
 def update_output(start_date, end_date, input1, input2):
-    """ Map callback function
+    """Map callback function
 
     Callback function that returns a map figure based on the date range and magnitude range inputs.
 
@@ -778,70 +1056,86 @@ def update_output(start_date, end_date, input1, input2):
         fig -- The Plotly Express scatter mapbox map figure object
 
     """
-    geo_dff = geo_df[(geo_df['Event_Date'] >= date.fromisoformat(start_date)) &
-                     (geo_df['Event_Date'] <= date.fromisoformat(end_date)) &
-                     (geo_df['Mag'] >= input1) & (geo_df['Mag'] <= input2)]
+    geo_dff = geo_df[
+        (geo_df["Event_Date"] >= date.fromisoformat(start_date))
+        & (geo_df["Event_Date"] <= date.fromisoformat(end_date))
+        & (geo_df["Mag"] >= input1)
+        & (geo_df["Mag"] <= input2)
+    ]
 
     lats = geo_dff.geometry.y
     lons = geo_dff.geometry.x
     zoom_level, map_ctr = determine_zoom_level(lons, lats)
 
-    fig = px.scatter_mapbox(geo_dff,
-                            lat=geo_dff.geometry.y,
-                            lon=geo_dff.geometry.x,
-                            color=geo_dff.Mag,
-                            custom_data=['Title', 'Place', 'Event_Date', 'Event_Time', 'Mag', 'Depth', 'Felt', 'CDI',
-                                         'id'],
-                            color_continuous_scale=px.colors.sequential.Jet,
-                            # zoom=11.25,
-                            zoom=zoom_level,
-                            # center=dict(lat=34.170983, lon=-80.794252),
-                            center=dict(lat=map_ctr[1], lon=map_ctr[0]),
-                            title='South Carolina Earthquake Swarm Dec - 2021 to Present',
-                            template='ggplot2')
+    fig = px.scatter_mapbox(
+        geo_dff,
+        lat=geo_dff.geometry.y,
+        lon=geo_dff.geometry.x,
+        color=geo_dff.Mag,
+        custom_data=["Title", "Place", "Event_Date", "Event_Time", "Mag", "Depth", "Felt", "CDI", "id"],
+        color_continuous_scale=px.colors.sequential.Jet,
+        # zoom=11.25,
+        zoom=zoom_level,
+        # center=dict(lat=34.170983, lon=-80.794252),
+        center=dict(lat=map_ctr[1], lon=map_ctr[0]),
+        title="South Carolina Earthquake Swarm Dec - 2021 to Present",
+        template="ggplot2",
+    )
 
-    fig.update_layout(mapbox_style="streets", mapbox_accesstoken=mapbox_access_token,
-                      coloraxis_colorbar=dict(orientation='h',
-                                              lenmode='pixels',
-                                              # len=435,
-                                              len=350,
-                                              thicknessmode='pixels',
-                                              thickness=4,
-                                              xanchor='left',
-                                              x=0,
-                                              xpad=3,
-                                              yanchor='top'),
-                      title=dict(font=dict(color='#2F4F4F', size=14)),
-                      autosize=True,
-                      margin=dict(t=30, b=0, l=0, r=0),
-                      clickmode='event+select',
-                      paper_bgcolor='#FAEBD7',
-                      uirevision='foo',
-                      hovermode='closest',
-                      hoverdistance=2)
+    fig.update_layout(
+        mapbox_style="streets",
+        mapbox_accesstoken=mapbox_access_token,
+        coloraxis_colorbar=dict(
+            orientation="h",
+            lenmode="pixels",
+            # len=435,
+            len=350,
+            thicknessmode="pixels",
+            thickness=4,
+            xanchor="left",
+            x=0,
+            xpad=3,
+            yanchor="top",
+        ),
+        title=dict(font=dict(color="#2F4F4F", size=14)),
+        autosize=True,
+        margin=dict(t=30, b=0, l=0, r=0),
+        clickmode="event+select",
+        paper_bgcolor="#FAEBD7",
+        uirevision="foo",
+        hovermode="closest",
+        hoverdistance=2,
+    )
 
-    fig.update_traces(hovertemplate="<br>".join(["Event Title: %{customdata[0]}",
-                                                 "Event Date: %{customdata[2]}",
-                                                 "Event Time: %{customdata[3]}",
-                                                 "Location: %{customdata[1]}",
-                                                 "Magnitude: %{customdata[4]}",
-                                                 "Lat:  %{lat},  " + "Lon:  %{lon}    " +
-                                                 "Depth(km):  %{customdata[5]}",
-                                                 "DYFI: %{customdata[6]}"]),
-                      mode='markers',
-                      marker={'opacity': 0.75, 'size': 10},
-                      unselected={'marker': {'opacity': 0.75, 'size': 10}},
-                      selected={'marker': {'opacity': 1, 'size': 25}})
+    fig.update_traces(
+        hovertemplate="<br>".join(
+            [
+                "Event Title: %{customdata[0]}",
+                "Event Date: %{customdata[2]}",
+                "Event Time: %{customdata[3]}",
+                "Location: %{customdata[1]}",
+                "Magnitude: %{customdata[4]}",
+                "Lat:  %{lat},  " + "Lon:  %{lon}    " + "Depth(km):  %{customdata[5]}",
+                "DYFI: %{customdata[6]}",
+            ]
+        ),
+        mode="markers",
+        marker={"opacity": 0.75, "size": 10},
+        unselected={"marker": {"opacity": 0.75, "size": 10}},
+        selected={"marker": {"opacity": 1, "size": 25}},
+    )
     return fig
 
 
-@app.callback(Output("graph-plot", "children"),
-              Output("plot-type-dropdown", "disabled"),
-              Input("map-graph", "selectedData"),
-              Input("plot-type-dropdown", "value"),
-              prevent_initial_call=False)
+@app.callback(
+    Output("graph-plot", "children"),
+    Output("plot-type-dropdown", "disabled"),
+    Input("map-graph", "selectedData"),
+    Input("plot-type-dropdown", "value"),
+    prevent_initial_call=False,
+)
 def plot_graphs(selected_data, user_input):
-    """ graph-plot callback function
+    """graph-plot callback function
 
     Callback function that returns and displays the graph plot that is selected.
 
@@ -860,15 +1154,30 @@ def plot_graphs(selected_data, user_input):
     """
 
     if selected_data is None:
-        return html.Div(children=[html.P('''Filter events displayed by using the date and magnitude filters.'''),
-                                  html.P('''Select an event marker from the map and a plot type from the
-                                         dropdown for more event information.''')],
-                        style={'text-align': 'center', 'margin': '10px 0', 'padding': '5px',
-                               'border': '1px solid #999', 'display': 'flex', 'flex-direction': 'column',
-                               'width': '100%'},
-                        className="center"), False
+        return (
+            html.Div(
+                children=[
+                    html.P("""Filter events displayed by using the date and magnitude filters."""),
+                    html.P(
+                        """Select an event marker from the map and a plot type from the
+                                         dropdown for more event information."""
+                    ),
+                ],
+                style={
+                    "text-align": "center",
+                    "margin": "10px 0",
+                    "padding": "5px",
+                    "border": "1px solid #999",
+                    "display": "flex",
+                    "flex-direction": "column",
+                    "width": "100%",
+                },
+                className="center",
+            ),
+            False,
+        )
     else:
-        event_id = selected_data['points'][0]['customdata'][8]
+        event_id = selected_data["points"][0]["customdata"][8]
 
         # print(selected_data)
         # print(selected_data['points'][0]['lat'], selected_data['points'][0]['lon'])
@@ -877,14 +1186,25 @@ def plot_graphs(selected_data, user_input):
         # print(selected_data['points'][0]['customdata'][6])
 
         # if DYFI felt is zero
-        if selected_data['points'][0]['customdata'][6] == 0:
+        if selected_data["points"][0]["customdata"][6] == 0:
             # return go.Figure()
             # return select_graph
             # return None
-            return html.Div(html.P('''Event has no reported DYFI information.'''),
-                            style={'text-align': 'center', 'margin': '10px 0', 'padding': '5px',
-                                   'border': '1px solid #999', 'display': 'flex', 'flex-direction': 'column'},
-                            className="center"), True
+            return (
+                html.Div(
+                    html.P("""Event has no reported DYFI information."""),
+                    style={
+                        "text-align": "center",
+                        "margin": "10px 0",
+                        "padding": "5px",
+                        "border": "1px solid #999",
+                        "display": "flex",
+                        "flex-direction": "column",
+                    },
+                    className="center",
+                ),
+                True,
+            )
         elif event_id and user_input == "Intensity Plot(1km)":
             return display_intensity_plot_1km(event_id, selected_data), False
         elif event_id and user_input == "Intensity Plot(10km)":
@@ -899,5 +1219,5 @@ def plot_graphs(selected_data, user_input):
             return display_dyfi_responses_tbl(event_id), False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True, use_reloader=False, port=8051)
