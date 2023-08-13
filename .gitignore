@@ -1,7 +1,6 @@
 /.mapbox_token
 /.ycm_extra_conf.py
 /basemap_test.py
-/assets/bWLwgP.css.junk
 /concat_zip_shp.ipynb
 /develop_test_zip_plot.ipynb
 /develop_test_zip_plot_v1.ipynb
@@ -11,3 +10,4 @@
 /data/ny_dyfi_plot_numresp.json
 /zip_choro_test.py
 /zipcodes_within.py
+/.python-version
