@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+__author__ = "Michael Biel"
+__copyright__ = "Copyright 2023, MAB-Geo Data Science, The Earthquake Vis. Project"
+__license__ = ""
+__version__ = "1.0.1"
+__maintainer__ = "Michael Biel"
+__email__ = "mick.the.linux.geek@hotmail.com"
+__status__ = "development"
+
 # ----------------------------------------------------------------------------------------------------------
 #
 # TODO:  Use USGS api to retrieve data instead of reading downloaded data files
@@ -48,6 +56,8 @@ pd.set_option("display.max_columns", 32)
 event_file = DATA_DIR / "SC_Earthquake.geojson"
 geo_df = gpd.read_file(event_file)
 
+# TODO:  From here to app definition should be done prior to running the app; usgs_api.py (api module)
+
 geo_df["Event_Date"] = (
     pd.to_datetime(geo_df.time, unit="ms").dt.tz_localize("UTC").dt.tz_convert("America/New_York").dt.date
 )
@@ -71,6 +81,8 @@ geo_df.Place = geo_df.Place.fillna("No Location")
 
 geo_df["Depth"] = geo_df.geometry.z
 geo_df["Mag"] = geo_df.Mag.round(1)
+
+# =======================================================================================================================
 
 geo_df = geo_df.copy()
 
@@ -417,15 +429,25 @@ def display_zip_plot(evnt_id, sdata):
     # Used parquet file format for the zip code file because it is read in faster; geojson file read is way too slow
 
     zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.parquet"
-    sc_zip_df = gpd.read_parquet(zc_filename, columns=["geometry", "ZCTA5CE10"])
+    # sc_zip_df = gpd.read_parquet(zc_filename, columns=["geometry", "ZCTA5CE10"])
+
+    sc_zip_df = gpd.read_file(r"/home/mick/Work/data_science/SC_earthquake/data/zipcode_data/cb_2010_45_zcta510.shp")
 
     cdi_zip_df["ZIP/Location"] = cdi_zip_df[["ZIP/Location"]].astype("str")
-    sc_zip_df["ZCTA5CE10"] = sc_zip_df[["ZCTA5CE10"]].astype("str")
+
+    # sc_zip_df["ZCTA5CE10"] = sc_zip_df[["ZCTA5CE10"]].astype("str")
+    sc_zip_df["Zipcode"] = sc_zip_df[["Zipcode"]].astype("str")
 
     df = cdi_zip_df.copy()
     geo_dff = (
-        gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="ZCTA5CE10", right_on="ZIP/Location").set_index("ZIP/Location")
+        # gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="ZCTA5CE10", right_on="ZIP/Location").set_index("ZIP/Location")
+        gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="Zipcode", right_on="ZIP/Location")
+        # .set_index("ZIP/Location")  # FIXME:  Remove this line
     )
+
+    geo_dff = geo_dff[["Zipcode", "CDI", "Response_Count", "Hypocentral_Distance", "geometry"]]
+
+    print(geo_dff)  # FIXME:  Remove this line
 
     state_zip_json = json.loads(geo_dff.to_json())
 
@@ -446,8 +468,9 @@ def display_zip_plot(evnt_id, sdata):
             geojson=state_zip_json,
             locations=df["ZIP/Location"],
             z=df["CDI"],
-            featureidkey="properties.ZCTA5CE10",
-            marker={"opacity": 0.3, "line_width": 0},
+            featureidkey="properties.Zipcode",
+            # featureidkey="properties.ZCTA5CE10",
+            marker={"opacity": 0.3, "line_width": 0.5},
             showscale=True,
             coloraxis="coloraxis",
             name="",
@@ -474,7 +497,8 @@ def display_zip_plot(evnt_id, sdata):
     )
 
     fig.update_layout(
-        mapbox_style="streets",  # "open-street-map",
+        # mapbox_style="open-street-map",
+        mapbox_style="streets",
         mapbox_zoom=7.5,
         mapbox_center={"lat": sdata["points"][0]["lat"], "lon": sdata["points"][0]["lon"]},
         mapbox=dict(accesstoken=mapbox_access_token),
@@ -811,9 +835,10 @@ def display_dyfi_responses_tbl(evnt_id):
         html.Tbody([html.Tr([html.Td(str(c)) for c in r]) for r in dyfi_responses_df.to_records(index=False)])
     ]
     # noinspection PyTypeChecker
-    table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
+    table = dbc.Table(table_header + table_body, striped=True, hover=True)  # Table bordered is done in style.css
+    # table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
 
-    return html.Div(table, className="table-bordered table-responsive table-wrapper")
+    return html.Div(table, className="table-wrapper table-responsive", style={"width": "100%"})
 
 
 # Application html layout structure
