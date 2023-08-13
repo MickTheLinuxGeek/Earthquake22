@@ -393,15 +393,6 @@ li {
 
 /* Tables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-/* thead th {
-    background-color: SaddleBrown;
-    // background-color: #006DCC;
-    // color: white;
-}
-
-tbody td {
-    background-color: #EEEEEE;
-} */
 .table-responsive {
   display: block;
   width: 100%;
@@ -412,39 +403,58 @@ tbody td {
   position: relative;
   height: 53vh;
 }
-.table-wrapper > table > thead {
+table {
+  width: 100%;
+  text-align: left;
+  border-collapse: separate; /* Don't collapse */
+  border-spacing: 0;
+}
+.table thead {
+  --bs-table-bg: AntiqueWhite;
+  // --bs-table-bg: #e0b589;  // Buttercream 87%
+}
+.table {
+  --bs-table-bg: #e0b589;  // Buttercream 87%
+}
+
+table th {
+  /* Apply both top and bottom borders to the <th> */
+  // border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+table thead tr:first-child th {
+  border-top: 1px solid black;
+}
+table tbody tr:last-child td {
+  border-bottom: 1px solid;
+}
+
+table td {
+  /* For cells, apply the border to one of each side only (right but not left, bottom but not top) */
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+table th:first-child,
+table td:first-child {
+  /* Apply a left border on the first <td> or <th> in a row */
+  border-left: 2px solid;
+}
+
+table thead th {
   position: sticky;
   top: 0;
-}
-.table-wrapper > table > th {
-  position: sticky;
-  top: 0;
-}
-.table-wrapper > table > thead {
-  border-top: 1px solid Black;
-  border-right: 1px solid Black;
-  border-left: 1px solid Black;
-  border-bottom: 1px solid Black;
-}
-.table-wrapper > table > tbody {
-  background-color: #e0b589;  // Buttercream 87%
-  // border: 4px solid Black;
-}
-.table-wrapper > table > tbody > tr {
-  border: 1px solid #70380f;
-}
-.table-wrapper > table > tbody > tr > td {
-  border-right: 1px solid #70380f;
-  border-left: 1px solid #70380f;
 }
 
 .center {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 53vh;
+  height: 54vh;
   border: 3px solid Green;
 }
+
 /* table {
   border-collapse: collapse;
 }
