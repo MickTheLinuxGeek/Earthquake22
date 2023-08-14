@@ -481,7 +481,7 @@ def display_zip_plot(evnt_id, sdata):
     # zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.geojson"
     # Used parquet file format for the zip code file because it is read in faster; geojson file read is way too slow
 
-    zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.parquet"
+    # zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.parquet"
     # sc_zip_df = gpd.read_parquet(zc_filename, columns=["geometry", "ZCTA5CE10"])
 
     zc_filename = DATA_DIR / ZC_DATA_PATH / "cb_2010_45_zcta510.shp"
@@ -946,7 +946,10 @@ def display_dyfi_responses_tbl(evnt_id):
     # table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
 
     return html.Div(
-        table, className="table-wrapper table-responsive", style={"width": "100%"}
+        table,
+        className="table-wrapper table-responsive",
+        style={"width": "100%"},
+        # style={"max-height": "54vh", "width": "100%"},
     )
 
 
