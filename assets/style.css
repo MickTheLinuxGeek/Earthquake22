@@ -401,7 +401,7 @@ li {
 .table-wrapper {
   overflow: visible auto;
   position: relative;
-  height: 53vh;
+  max-height: 55vh;
 }
 table {
   width: 100%;
@@ -451,8 +451,7 @@ table thead th {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 54vh;
-  border: 3px solid Green;
+  // height: 53vh;
 }
 
 /* table {
