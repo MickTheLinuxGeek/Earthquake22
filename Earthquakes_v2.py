@@ -21,7 +21,7 @@ __status__ = "development"
 #
 # TODO:  Use python-dotenv package to read in api keys
 #
-# TODO:  Refactor code
+# TODO:  Refactor code - Completed - 09/19/2023
 #
 # TODO:  Use a nav bar in place of plot type dropdown
 #

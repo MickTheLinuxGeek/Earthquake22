@@ -4,7 +4,7 @@
 __author__ = "Michael Biel"
 __copyright__ = "Copyright 2023, MAB-Geo Data Science, The Earthquake Vis. Project"
 __license__ = ""
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 __maintainer__ = "Michael Biel"
 __email__ = "mick.the.linux.geek@hotmail.com"
 __status__ = "development"
