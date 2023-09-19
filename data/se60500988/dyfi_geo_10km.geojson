@@ -1,0 +1,1 @@
+{"features": [{"geometry": {"coordinates": [[[-82.96283, 34.59605], [-82.85383, 34.59776], [-82.85584, 34.68789], [-82.96495, 34.68618]]], "type": "Polygon"}, "type": "Feature", "properties": {"stddev": 0.33, "nresp": 1, "name": "UTM:(17S 032 383 10000)<br>Seneca", "cdi": 1, "dist": 22}}], "type": "FeatureCollection"}

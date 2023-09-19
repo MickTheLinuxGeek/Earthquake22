@@ -1,0 +1,1 @@
+{"features": [{"geometry": {"coordinates": [[[-82.86594, 34.65167], [-82.85504, 34.65184], [-82.85524, 34.66085], [-82.86614, 34.66068]]], "type": "Polygon"}, "type": "Feature", "properties": {"stddev": 0.33, "nresp": 1, "name": "UTM:(17S 0329 3836 1000)<br>UTM:(17S 0329 3836 1000)", "cdi": 1, "dist": 21}}], "type": "FeatureCollection"}
