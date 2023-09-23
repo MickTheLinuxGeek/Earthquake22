@@ -17,11 +17,11 @@ __status__ = "development"
 #
 # TODO:  Add logging
 #
-# TODO:  Use flask caching of graph-plots; Better performance?
+# Use flask caching of graph-plots; Better performance? - Completed - 09/22/2023
 #
-# TODO:  Use python-dotenv package to read in api keys
+# Use python-dotenv package to read in api keys - 09/20/2023 - Decided not to implement.
 #
-# TODO:  Refactor code - Completed - 09/19/2023
+# Refactor code - Completed - 09/19/2023
 #
 # TODO:  Use a nav bar in place of plot type dropdown
 #
@@ -31,7 +31,8 @@ __status__ = "development"
 #
 # TODO:  Add GA & NC state zipcode shapefiles for zip graph-plot -- WIP
 #
-# TODO:  Research using dash data-table for zip responses table
+# Research using dash data-table for zip responses table - 09/20/2023 - Do not need to do this; The dbc.Table
+#  component works fine.
 #
 # ----------------------------------------------------------------------------------------------------------
 

@@ -1,5 +1,7 @@
 """ Functions for the graph plots
 
+    Each one of these functions is defined with @cache.memoize decorator to add caching to the functions.
+
 A module of functions, one each per graph plot:
     display_intensity_plot_1km()
     display_intensity_plot_10km()
@@ -18,12 +20,16 @@ from pathlib import Path
 import json
 import plotly.graph_objects as go
 
+from . import cache
+
+TIMEOUT = 120
 DATA_DIR = Path(r"./data")
 ZC_DATA_PATH = Path(r"zipcode_data")
 mapbox_access_token = open(".mapbox_token").read()
 
 
 # graph-plot functions
+@cache.memoize(timeout=TIMEOUT)
 def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
     """Display 1km spacing choropleth map of earthquake DYFI intensities
 
@@ -94,8 +100,7 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
             name="",
             text=[sdata["points"][0]["customdata"][1]],
             hoverlabel={"bgcolor": "#323232"},
-            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>"
-            + "Location -- %{text}",
+            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>" + "Location -- %{text}",
         )
     )
 
@@ -162,6 +167,7 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
     )
 
 
+@cache.memoize(timeout=TIMEOUT)
 def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
     """Display 10km spacing choropleth map of earthquake DYFI intensities
 
@@ -231,8 +237,7 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
             name="",
             text=[sdata["points"][0]["customdata"][1]],
             hoverlabel={"bgcolor": "#323232"},
-            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>"
-            + "Location -- %{text}",
+            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>" + "Location -- %{text}",
         )
     )
 
@@ -299,6 +304,7 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
     )
 
 
+@cache.memoize(timeout=TIMEOUT)
 def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     """Display a zipcode choropleth map of the earthquake DYFI intensities.
 
@@ -343,15 +349,11 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     df = cdi_zip_df.copy()
     geo_dff = (
         # gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="ZCTA5CE10", right_on="ZIP/Location").set_index("ZIP/Location")
-        gpd.GeoDataFrame(sc_zip_df).merge(
-            df, left_on="Zipcode", right_on="ZIP/Location"
-        )
+        gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="Zipcode", right_on="ZIP/Location")
         # .set_index("ZIP/Location")  # FIXME:  Remove this line
     )
 
-    geo_dff = geo_dff[
-        ["Zipcode", "CDI", "Response_Count", "Hypocentral_Distance", "geometry"]
-    ]
+    geo_dff = geo_dff[["Zipcode", "CDI", "Response_Count", "Hypocentral_Distance", "geometry"]]
     state_zip_json = json.loads(geo_dff.to_json())
 
     ww = list(df["CDI"])
@@ -395,8 +397,7 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
             name="",
             text=[sdata["points"][0]["customdata"][1]],
             hoverlabel={"bgcolor": "#323232"},
-            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>"
-            + "Location -- %{text}",
+            hovertemplate="Epicenter -- Latitude:  %{lat},  Longitude:  %{lon}<br>" + "Location -- %{text}",
         )
     )
 
@@ -464,6 +465,7 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     )
 
 
+@cache.memoize(timeout=TIMEOUT)
 def display_intensity_dist_plot(evnt_id: str) -> html.Div:
     """Display a graph of the event's DYFI reported intensities vs. hypo-central distance from the event.
 
@@ -514,15 +516,12 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
                     name="All Reported Data",
                     customdata=xi,
                     text=yi,
-                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>"
-                    + "CDI:  %{text}",
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" + "CDI:  %{text}",
                 )
             )
             fig.update_yaxes(title_text=ylabel, range=[0, 10])
             fig.update_layout(
-                yaxis=dict(
-                    tickvals=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], fixedrange=True
-                ),
+                yaxis=dict(tickvals=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], fixedrange=True),
                 title_text="Intensity Vs. Distance",
                 plot_bgcolor="#FAEBD7",
                 paper_bgcolor="#FFDEAD",
@@ -544,8 +543,7 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
                     marker=dict(color="rgb(214, 86, 23)", size=6),
                     customdata=xi,
                     text=yi,
-                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>"
-                    + "Estimated CDI:  %{text:.2f}",
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" + "Estimated CDI:  %{text:.2f}",
                 )
             )
 
@@ -565,8 +563,7 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
                     marker=dict(color="orange", size=6),
                     customdata=xi,
                     text=yi,
-                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>"
-                    + "Estimated CDI:  %{text:.2f}",
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" + "Estimated CDI:  %{text:.2f}",
                 )
             )
 
@@ -626,8 +623,7 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
                     marker=dict(color="rgb(254, 77, 85)", size=6),
                     customdata=xi,
                     text=yi,
-                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>"
-                    + "Median CDI:  %{text}",
+                    hovertemplate="Hypocentral Dist. (km):  %{customdata}<br>" + "Median CDI:  %{text}",
                 )
             )
             fig.update_xaxes(title_text=xlabel, range=[0, max(xi)])
@@ -667,6 +663,7 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
     )
 
 
+@cache.memoize(timeout=TIMEOUT)
 def display_response_time_plot(evnt_id: str) -> html.Div:
     """Display a line graph of DYFI number of responses vs. time since earthquake event.
 
@@ -705,8 +702,7 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
             mode="lines+markers",
             line=dict(color="green", width=2),
             marker=dict(color="green", size=6),
-            hovertemplate="Responses:  %{y}<br>"
-            + "Time Since Event:  %{x}<extra></extra>",
+            hovertemplate="Responses:  %{y}<br>" + "Time Since Event:  %{x}<extra></extra>",
         )
     )
     fig.update_xaxes(title_text=xlabel)
@@ -743,6 +739,7 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
     )
 
 
+@cache.memoize(timeout=TIMEOUT)
 def display_dyfi_responses_tbl(evnt_id: str) -> html.Div:
     """Display a table of the DYFI responses information.
 
@@ -764,22 +761,13 @@ def display_dyfi_responses_tbl(evnt_id: str) -> html.Div:
     filename = DATA_DIR / evnt_id / "cdi_zip.csv"
     dyfi_responses_df = pd.read_csv(filename, index_col=False)
 
-    table_header = [
-        html.Thead(html.Tr([html.Th(i) for i in dyfi_responses_df.columns]))
-    ]
+    table_header = [html.Thead(html.Tr([html.Th(i) for i in dyfi_responses_df.columns]))]
 
     table_body = [
-        html.Tbody(
-            [
-                html.Tr([html.Td(str(c)) for c in r])
-                for r in dyfi_responses_df.to_records(index=False)
-            ]
-        )
+        html.Tbody([html.Tr([html.Td(str(c)) for c in r]) for r in dyfi_responses_df.to_records(index=False)])
     ]
     # noinspection PyTypeChecker
-    table = dbc.Table(
-        table_header + table_body, striped=True, hover=True
-    )  # Table bordered is done in style.css
+    table = dbc.Table(table_header + table_body, striped=True, hover=True)  # Table bordered is done in style.css
 
     return html.Div(
         table,
