@@ -1,15 +1,7 @@
 /.mapbox_token
 /.ycm_extra_conf.py
-/misc/basemap_test.py
-/misc/concat_zip_shp.ipynb
-/misc/develop_test_zip_plot.ipynb
-/misc/develop_test_zip_plot_v1.ipynb
-/misc/flask_cache.py
-/data/NC_SC_GA_region_zipcodes.feather
-/data/ny_dyfi_plot_atten.json
-/data/ny_dyfi_plot_numresp.json
-/misc/zip_choro_test.py
-/misc/zipcodes_within.py
 /.python-version
 /misc/
 /gp_cache/
+/.flake8
+/.pylintrc
