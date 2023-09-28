@@ -8,7 +8,7 @@ Functions
 
 from dash import Dash, html, Input, Output
 
-from src.graph_plot_functions.graph_functions import (
+from ..graph_plot_functions.graph_functions import (
     display_response_time_plot,
     display_intensity_dist_plot,
     display_dyfi_responses_tbl,
@@ -17,8 +17,8 @@ from src.graph_plot_functions.graph_functions import (
     display_intensity_plot_10km,
 )
 
-dropdown_disabled = True
-dropdown_not_disabled = False
+DROPDOWN_DISABLED = True
+DROPDOWN_NOT_DISABLED = False
 
 
 def render(app: Dash) -> html.Div:
@@ -101,48 +101,66 @@ def render(app: Dash) -> html.Div:
                     },
                     className="center",
                 ),
-                dropdown_not_disabled,
+                DROPDOWN_NOT_DISABLED,
             )
-        else:
-            event_id = selected_data["points"][0]["customdata"][8]
+            # else:
+        event_id = selected_data["points"][0]["customdata"][8]
 
-            # if DYFI felt is zero
-            if selected_data["points"][0]["customdata"][6] == 0:
-                return (
-                    html.Div(
-                        html.P("""Event has no reported DYFI information."""),
-                        style={
-                            "text-align": "center",
-                            "margin": "10px 0",
-                            "padding": "5px",
-                            "border": "1px solid #999",
-                            "display": "flex",
-                            "flex-direction": "column",
-                        },
-                        className="center",
-                    ),
-                    dropdown_disabled,
-                )
-            elif plot_type == "Intensity Plot(1km)":
-                return (
-                    display_intensity_plot_1km(event_id, selected_data),
-                    dropdown_not_disabled,
-                )
-            elif plot_type == "Intensity Plot(10km)":
-                return (
-                    display_intensity_plot_10km(event_id, selected_data),
-                    dropdown_not_disabled,
-                )
-            elif plot_type == "Zip Map":
-                return (
-                    display_zip_plot(event_id, selected_data),
-                    dropdown_not_disabled,
-                )
-            elif plot_type == "Intensity Vs. Distance":
-                return display_intensity_dist_plot(event_id), dropdown_not_disabled
-            elif plot_type == "Response Vs. Time":
-                return display_response_time_plot(event_id), dropdown_not_disabled
-            elif plot_type == "DYFI Responses":
-                return display_dyfi_responses_tbl(event_id), dropdown_not_disabled
+        # if DYFI felt is zero
+        if selected_data["points"][0]["customdata"][6] == 0:
+            return (
+                html.Div(
+                    html.P("""Event has no reported DYFI information."""),
+                    style={
+                        "text-align": "center",
+                        "margin": "10px 0",
+                        "padding": "5px",
+                        "border": "1px solid #999",
+                        "display": "flex",
+                        "flex-direction": "column",
+                    },
+                    className="center",
+                ),
+                DROPDOWN_DISABLED,
+            )
+        graph_result = None
+        if plot_type == "Intensity Plot(1km)":
+            graph_result = display_intensity_plot_1km(event_id, selected_data)
+
+            # return (
+            #     display_intensity_plot_1km(event_id, selected_data),
+            #     DROPDOWN_NOT_DISABLED,
+            #  )
+        if plot_type == "Intensity Plot(10km)":
+            graph_result = display_intensity_plot_10km(event_id, selected_data)
+            # return (
+            #     display_intensity_plot_10km(event_id, selected_data),
+            #     DROPDOWN_NOT_DISABLED,
+            # )
+        if plot_type == "Zip Map":
+            graph_result = display_zip_plot(event_id, selected_data)
+            # return (
+            #     display_zip_plot(event_id, selected_data),
+            #     DROPDOWN_NOT_DISABLED,
+            # )
+        if plot_type == "Intensity Vs. Distance":
+            graph_result = display_intensity_dist_plot(event_id)
+            # return (
+            #     display_intensity_dist_plot(event_id),
+            #     DROPDOWN_NOT_DISABLED,
+            # )
+        if plot_type == "Response Vs. Time":
+            graph_result = display_response_time_plot(event_id)
+            # return (
+            #     display_response_time_plot(event_id),
+            #     DROPDOWN_NOT_DISABLED,
+            # )
+        if plot_type == "DYFI Responses":
+            graph_result = display_dyfi_responses_tbl(event_id)
+            # return (
+            #     display_dyfi_responses_tbl(event_id),
+            #     DROPDOWN_NOT_DISABLED,
+            # )
+        return graph_result, DROPDOWN_NOT_DISABLED
 
     return html.Div(id="graph-plot")

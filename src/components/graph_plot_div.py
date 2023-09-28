@@ -9,7 +9,7 @@ Functions:
 """
 
 from dash import Dash, html, dcc
-from src.components import graph_plot
+from . import graph_plot
 
 
 def render(app: Dash) -> html.Div:

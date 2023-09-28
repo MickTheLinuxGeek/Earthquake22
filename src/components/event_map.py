@@ -5,11 +5,11 @@
     render() -> html.Div
  """
 
-from dash import Dash, html, dcc, Input, Output
 from datetime import date
+from dash import Dash, html, dcc, Input, Output
 from geopandas import GeoDataFrame
 
-from src.components.map_graph_plot import plot_map_graph
+from .map_graph_plot import plot_map_graph
 
 
 def render(app: Dash, data: GeoDataFrame) -> html.Div:

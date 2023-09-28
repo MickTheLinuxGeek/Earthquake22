@@ -26,12 +26,12 @@ import argparse
 from pathlib import Path
 from datetime import date, timedelta
 import time
+from concurrent import futures
+from concurrent.futures import ThreadPoolExecutor
 import requests
 import pandas as pd
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
-from concurrent import futures
-from concurrent.futures import ThreadPoolExecutor
 
 DATA_DIR = r"./data/"
 VERBOSE_MODE = False
@@ -55,7 +55,7 @@ def close_http_session(http):  # pylint: disable='missing-function-docstring'
     http.close()
 
 
-def get_url(xhttp, url):
+def get_url(xhttp, url):  # pylint: disable='missing-function-docstring'
     return xhttp.get(url, timeout=(3.05, 27))
 
 
@@ -148,8 +148,8 @@ def get_dyfi_urls(eq_id_url_df, http):
     querystring_list = list(eq_id_url_df["properties.detail"])
     with ThreadPoolExecutor(max_workers=16) as pool:
         task_list = [pool.submit(get_url, http, qry) for qry in querystring_list]
-        for f in futures.as_completed(task_list):
-            res_data = f.result().json()
+        for fut in futures.as_completed(task_list):
+            res_data = fut.result().json()
             event_id = res_data["id"]
             res_data_df = pd.DataFrame(res_data["properties"]["products"]["dyfi"])
             temp_df = res_data_df.loc[
@@ -159,14 +159,14 @@ def get_dyfi_urls(eq_id_url_df, http):
             if "cdi_zip.txt.url" not in temp_df:
                 continue
             dyfi_zip_urls.append(
-                dict(
-                    e_id=event_id,
-                    e_url=temp_df["cdi_zip.txt.url"][0],
-                    e_dyfi_geo_1k_url=temp_df["dyfi_geo_1km.geojson.url"][0],
-                    e_dyfi_geo_10k_url=temp_df["dyfi_geo_10km.geojson.url"][0],
-                    e_dyfi_plot_atten_url=temp_df["dyfi_plot_atten.json.url"][0],
-                    e_dyfi_plot_numresp_url=temp_df["dyfi_plot_numresp.json.url"][0],
-                )
+                {
+                    "e_id": event_id,
+                    "e_url": temp_df["cdi_zip.txt.url"][0],
+                    "e_dyfi_geo_1k_url": temp_df["dyfi_geo_1km.geojson.url"][0],
+                    "e_dyfi_geo_10k_url": temp_df["dyfi_geo_10km.geojson.url"][0],
+                    "e_dyfi_plot_atten_url": temp_df["dyfi_plot_atten.json.url"][0],
+                    "e_dyfi_plot_numresp_url": temp_df["dyfi_plot_numresp.json.url"][0],
+                }
             )
     eq_ids_df = pd.DataFrame(dyfi_zip_urls)
     end_time = time.monotonic()
@@ -202,10 +202,13 @@ def process_fast_dyfi_urls_hlpr(http, executor, eid_list, url_list):
         url = future_to_url[future][0]
         eid = future_to_url[future][1]
         print(eid, url)
+        # FIXME:  Remove the try: except: else and do a yield future.result.json(). then preform the statements it the
+        #  else, but in process_fast_dyfi_urls() below.
         try:
             data = future.result().json()
         except Exception as exc:
-            print("%r generated an exception: %s" % (url, exc))
+            # print("%r generated an exception: %s" % (url, exc))
+            print(f"{url} generated an exception: {exc}")
         else:
             url_split = url.split(sep="/")
             filenme = url_split[-1]
@@ -216,7 +219,7 @@ def process_fast_dyfi_urls_hlpr(http, executor, eid_list, url_list):
                 filename, "w", encoding="utf-8"
             ) as f1:  # pylint: disable='invalid-name'  # noqa
                 json.dump(data, f1)
-    return
+    # return
 
 
 def process_fast_dyfi_urls(http, dyfi_urls_df):
@@ -253,7 +256,7 @@ def process_fast_dyfi_urls(http, dyfi_urls_df):
     end_time = time.monotonic()
     func_time = timedelta(seconds=end_time - start_time)
     print(f"Function: process_fast_dyfi_urls took {func_time} seconds to run.")
-    return
+    # return
 
 
 # def process_dyfi_urls(http, dyfi_urls_df):
@@ -367,11 +370,11 @@ def get_dyfi_zip_data(zip_df, http):
     end_time = time.monotonic()
     func_time = timedelta(seconds=end_time - start_time)
     print(f"Function: get_dyfi_zip_data took {func_time} seconds to run.")
-    return
+    # return
 
 
 if __name__ == "__main__":
-    """Driver function."""
+    # Driver function
     my_parser = argparse.ArgumentParser(
         prog="usgs_api", description="Retrieve earthquake data from USGS.gov"
     )

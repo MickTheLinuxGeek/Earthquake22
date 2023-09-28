@@ -6,9 +6,9 @@
     render() -> html.Div
  """
 
+from datetime import date, datetime as dt
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from datetime import date, datetime as dt
 
 
 def render() -> html.Div:
