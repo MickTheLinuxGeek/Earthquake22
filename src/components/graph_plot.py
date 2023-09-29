@@ -101,7 +101,8 @@ def render(app: Dash) -> html.Div:
                     },
                     className="center",
                 ),
-                DROPDOWN_NOT_DISABLED,
+                # DROPDOWN_NOT_DISABLED,
+                DROPDOWN_DISABLED,
             )
             # else:
         event_id = selected_data["points"][0]["customdata"][8]
