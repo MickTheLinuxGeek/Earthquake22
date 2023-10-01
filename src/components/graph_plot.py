@@ -77,7 +77,6 @@ def render(app: Dash) -> html.Div:
             display_dyfi_responses_tbl(event_id)
         """
 
-        # print(selected_data)
         if selected_data is None:
             return (
                 html.Div(
@@ -101,7 +100,6 @@ def render(app: Dash) -> html.Div:
                     },
                     className="center",
                 ),
-                # DROPDOWN_NOT_DISABLED,
                 DROPDOWN_DISABLED,
             )
             # else:
@@ -128,40 +126,21 @@ def render(app: Dash) -> html.Div:
         if plot_type == "Intensity Plot(1km)":
             graph_result = display_intensity_plot_1km(event_id, selected_data)
 
-            # return (
-            #     display_intensity_plot_1km(event_id, selected_data),
-            #     DROPDOWN_NOT_DISABLED,
-            #  )
         if plot_type == "Intensity Plot(10km)":
             graph_result = display_intensity_plot_10km(event_id, selected_data)
-            # return (
-            #     display_intensity_plot_10km(event_id, selected_data),
-            #     DROPDOWN_NOT_DISABLED,
-            # )
+
         if plot_type == "Zip Map":
             graph_result = display_zip_plot(event_id, selected_data)
-            # return (
-            #     display_zip_plot(event_id, selected_data),
-            #     DROPDOWN_NOT_DISABLED,
-            # )
+
         if plot_type == "Intensity Vs. Distance":
             graph_result = display_intensity_dist_plot(event_id)
-            # return (
-            #     display_intensity_dist_plot(event_id),
-            #     DROPDOWN_NOT_DISABLED,
-            # )
+
         if plot_type == "Response Vs. Time":
             graph_result = display_response_time_plot(event_id)
-            # return (
-            #     display_response_time_plot(event_id),
-            #     DROPDOWN_NOT_DISABLED,
-            # )
+
         if plot_type == "DYFI Responses":
             graph_result = display_dyfi_responses_tbl(event_id)
-            # return (
-            #     display_dyfi_responses_tbl(event_id),
-            #     DROPDOWN_NOT_DISABLED,
-            # )
+
         return graph_result, DROPDOWN_NOT_DISABLED
 
     return html.Div(id="graph-plot")

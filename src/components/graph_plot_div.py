@@ -1,4 +1,4 @@
-""" Creates an html.Div in the app layout for the graph plot.
+""" Creates a html.Div in the app layout for the graph plot.
 
 Creates and renders a html.Div in the app layout that will contain the graph plot selected.
 
