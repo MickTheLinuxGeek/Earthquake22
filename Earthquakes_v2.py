@@ -14,8 +14,12 @@ __status__ = "development"
 # ----------------------------------------------------------------------------------------------------------
 #
 # TODO:  Use USGS api to retrieve data instead of reading downloaded data files
+# TODO:  Use a nav bar in place of plot type dropdown
 #
 # TODO:  Add logging
+# TODO:  Add GA & NC state zipcode shapefiles for zip graph-plot -- WIP
+#
+# sm, md, lg mobile responsive screen sizes need work - Completed 10/01/2023
 #
 # Use flask caching of graph-plots; Better performance? - Completed - 09/22/2023
 #
@@ -23,13 +27,7 @@ __status__ = "development"
 #
 # Refactor code - Completed - 09/19/2023
 #
-# TODO:  Use a nav bar in place of plot type dropdown
-#
-# TODO:  Re-engineer link/contacts/etc. section at bottom of document
-#
-# TODO:  sm, md, lg mobile responsive screen sizes need work
-#
-# TODO:  Add GA & NC state zipcode shapefiles for zip graph-plot -- WIP
+# Re-engineer link/contacts/etc. section at bottom of document - Completed - 09/29/2023
 #
 # Research using dash data-table for zip responses table - 09/20/2023 - Do not need to do this; The dbc.Table
 #  component works fine.
