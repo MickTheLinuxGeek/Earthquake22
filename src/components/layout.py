@@ -9,7 +9,7 @@ Functions:
     create_layout(app: Dash, data: GeoDataFrame) -> html.Div
 """
 
-from dash import Dash, html, dcc
+from dash import Dash, html
 import dash_bootstrap_components as dbc
 from geopandas import GeoDataFrame
 
@@ -20,6 +20,7 @@ from . import (
     plot_type_dropdown,
     graph_plot_div,
     header,
+    footer,
 )
 
 
@@ -27,7 +28,7 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
     """Function to create app html page layout.
 
     This function creates and returns the app html page.  The page layout is a dbc.Container/Row/Col component structure
-    contained inside an html.Div.
+    contained inside a html.Div.
 
     Parameters:
     ----------
@@ -78,10 +79,10 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
                                 ),
                                 html.Div(children=[plot_type_dropdown.render()]),
                             ],
-                            xs=11,
+                            xs=12,
                             sm=8,
                             md=6,
-                            lg=2,
+                            lg=4,
                             xl=4,
                         ),
                         # Column for map-graph
@@ -92,7 +93,7 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
                             xs=12,
                             sm=8,
                             md=6,
-                            lg=2,
+                            lg=8,
                             xl=8,
                         ),
                     ],
@@ -105,77 +106,15 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
                                 graph_plot_div.render(app),
                             ],
                             xs=12,
-                            sm=8,
+                            sm=12,
                             md=12,
-                            lg=10,
+                            lg=12,
                             xl={"offset": 4, "size": 8},
                         )
                     ]
                 ),
-                # This section needs a better looking style
-                # Row for Links and Information
-                dbc.Row(
-                    style={"margin-top": "12px", "margin-bottom": "10px"},
-                    children=[
-                        dbc.Col(
-                            width=12,
-                            children=[
-                                dbc.Row(
-                                    children=[
-                                        dbc.Col(
-                                            width={"size": 10, "offset": 2},
-                                            children=[
-                                                html.P("Data Provided By"),
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Link(
-                                                            "U.S. Geological Survey - USAGov",
-                                                            href="https://www.usgs.gov/earthquake",
-                                                        )
-                                                    ]
-                                                ),
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Link(
-                                                            "U.S. Census Bureau",
-                                                            href="https://www.census.gov/",
-                                                        )
-                                                    ]
-                                                ),
-                                            ],
-                                        ),
-                                        dbc.Col(
-                                            width={"size": 10, "offset": 2},
-                                            children=[
-                                                html.P("Contact"),
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Link(
-                                                            "mick.the.linux.geek@hotmail.com",
-                                                            href="mailto:mick.the.linuk.geek@hotmail.com",
-                                                        )
-                                                    ]
-                                                ),
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Link(
-                                                            "Mastodon",
-                                                            href="https://mastodon.online/@mickthelinuxgeek",
-                                                        )
-                                                    ]
-                                                ),
-                                            ],
-                                        ),
-                                    ]
-                                )
-                            ],
-                            xs=12,
-                            sm=8,
-                            md=12,
-                            lg=10,
-                            xl=8,
-                        )
-                    ],
+                html.Div(
+                    children=[footer.render()],
                 ),
             ],
             fluid=True,
