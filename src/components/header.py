@@ -34,7 +34,8 @@ def render(app: Dash) -> html.Div:
                 href="https://plotly.com/dash/",
             ),
             html.H3(
-                "DASH - EARTHQUAKE DATA APP",
+                # "DASH - EARTHQUAKE DATA APP",
+                "EARTHQUAKE DATA EXPLORER",
                 style={"color": "SteelBlue"},
             ),
         ],
