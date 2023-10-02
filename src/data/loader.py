@@ -33,7 +33,7 @@ def load_event_data(file: Path) -> gpd.GeoDataFrame:
     """
 
     # Read geoJSON file into a geopandas.GeoDataFrame
-    geo_df = gpd.read_file(file)
+    geo_df = gpd.read_file(file, engine="pyogrio")
 
     # The time column in the dataframe is a Unix epoch time in ms.  The following two statements convert that epoch time
     # into event date and event time columns that are added to the dataframe.

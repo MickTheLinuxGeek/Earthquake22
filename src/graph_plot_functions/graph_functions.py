@@ -117,7 +117,10 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
             {
                 "zoom": 7.5,
                 "style": "streets",
-                "center": ({"lat": sdata["points"][0]["lat"], "lon": sdata["points"][0]["lon"]}),
+                "center": {
+                    "lat": sdata["points"][0]["lat"],
+                    "lon": sdata["points"][0]["lon"],
+                },
                 "accesstoken": mapbox_access_token,
             }
         ),
@@ -364,7 +367,9 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     # sc_zip_df = gpd.read_parquet(zc_filename, columns=["geometry", "ZCTA5CE10"])
 
     zc_filename = DATA_DIR / ZC_DATA_PATH / "cb_2010_45_zcta510.shp"
-    sc_zip_df = gpd.read_file(zc_filename)
+
+    # in geopandas 1.0 the pyogrio engine will be default
+    sc_zip_df = gpd.read_file(zc_filename, engine="pyogrio")
 
     # sc_zip_df = gpd.read_file(r"/home/mick/Work/data_science/SC_earthquake/data/zipcode_data/cb_2010_45_zcta510.shp")
 
@@ -376,10 +381,14 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     d_f = cdi_zip_df.copy()
     geo_dff = (
         # gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="ZCTA5CE10", right_on="ZIP/Location").set_index("ZIP/Location")
-        gpd.GeoDataFrame(sc_zip_df).merge(d_f, left_on="Zipcode", right_on="ZIP/Location")
+        gpd.GeoDataFrame(sc_zip_df).merge(
+            d_f, left_on="Zipcode", right_on="ZIP/Location"
+        )
     )
 
-    geo_dff = geo_dff[["Zipcode", "CDI", "Response_Count", "Hypocentral_Distance", "geometry"]]
+    geo_dff = geo_dff[
+        ["Zipcode", "CDI", "Response_Count", "Hypocentral_Distance", "geometry"]
+    ]
     state_zip_json = json.loads(geo_dff.to_json())
 
     www = list(d_f["CDI"])
@@ -643,7 +652,8 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
             mode="lines+markers",
             line={"color": "green", "width": 2},
             marker={"color": "green", "size": 6},
-            hovertemplate="Responses:  %{y}<br>" + "Time Since Event:  %{x}<extra></extra>",
+            hovertemplate="Responses:  %{y}<br>"
+            + "Time Since Event:  %{x}<extra></extra>",
         )
     )
     fig.update_xaxes(title_text=xlabel)
@@ -702,13 +712,22 @@ def display_dyfi_responses_tbl(evnt_id: str) -> html.Div:
     filename = DATA_DIR / evnt_id / "cdi_zip.csv"
     dyfi_responses_df = pd.read_csv(filename, index_col=False)
 
-    table_header = [html.Thead(html.Tr([html.Th(i) for i in dyfi_responses_df.columns]))]
+    table_header = [
+        html.Thead(html.Tr([html.Th(i) for i in dyfi_responses_df.columns]))
+    ]
 
     table_body = [
-        html.Tbody([html.Tr([html.Td(str(c)) for c in r]) for r in dyfi_responses_df.to_records(index=False)])
+        html.Tbody(
+            [
+                html.Tr([html.Td(str(c)) for c in r])
+                for r in dyfi_responses_df.to_records(index=False)
+            ]
+        )
     ]
     # noinspection PyTypeChecker
-    table = dbc.Table(table_header + table_body, striped=True, hover=True)  # Table bordered is done in style.css
+    table = dbc.Table(
+        table_header + table_body, striped=True, hover=True
+    )  # Table bordered is done in style.css
 
     return html.Div(
         table,
