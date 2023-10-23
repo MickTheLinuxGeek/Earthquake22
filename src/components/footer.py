@@ -6,8 +6,11 @@
     render() -> dbc.Row
  """
 
+import logging
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+
+logger = logging.getLogger(__name__)
 
 
 def render() -> dbc.Row:
@@ -18,7 +21,10 @@ def render() -> dbc.Row:
     dbc.Row :
         A footer dbc.Row component containing links and contact information.
     """
-    return dbc.Row(
+
+    logger.info(f"Entered footer.render() function.")
+
+    app_footer = dbc.Row(
         style={"margin-top": "12px", "margin-bottom": "10px"},
         children=[
             dbc.Col(
@@ -83,3 +89,8 @@ def render() -> dbc.Row:
             ),
         ],
     )
+
+    logger.debug(f"Page footer structure. \n{app_footer}")
+    logger.info(f"Exited footer.render() function.")
+
+    return app_footer

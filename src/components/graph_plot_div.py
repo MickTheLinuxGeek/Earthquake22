@@ -8,8 +8,11 @@ Functions:
     render(app: Dash) -> html.Div
 """
 
+import logging
 from dash import Dash, html, dcc
 from . import graph_plot
+
+logger = logging.getLogger(__name__)
 
 
 def render(app: Dash) -> html.Div:
@@ -32,7 +35,10 @@ def render(app: Dash) -> html.Div:
     Calls graph_plot.render(app) function to render the actual graph-plot.
 
     """
-    return html.Div(
+
+    logger.info(f"Entered graph_plot_div.render() function.")
+
+    graph_plot_div = html.Div(
         children=[
             dcc.Loading(
                 id="loading",
@@ -46,3 +52,8 @@ def render(app: Dash) -> html.Div:
         ],
         style={"align-self": "center"},
     )
+
+    logger.debug(f"Returned html.Div structure.\n{graph_plot_div}")
+    logger.info(f"Exited graph_plot_div.render() function.")
+
+    return graph_plot_div

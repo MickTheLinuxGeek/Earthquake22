@@ -7,8 +7,11 @@
  """
 
 
+import logging
 from dash import html
 import dash_bootstrap_components as dbc
+
+logger = logging.getLogger(__name__)
 
 
 def render() -> html.Div:
@@ -19,7 +22,10 @@ def render() -> html.Div:
 
         html.Div:  Contains min-mag-input and max-mag-input fields for the magnitude_range_picker (this) component.
     """
-    return html.Div(
+
+    logger.info(f"Entered magnitude_range_picker.render() function.")
+
+    mag_range_picker = html.Div(
         children=[
             dbc.Label("Min./Max. Magnitude Filter"),
             html.Div(
@@ -58,3 +64,7 @@ def render() -> html.Div:
             ),
         ],
     )
+
+    logger.info(f"Exited magnitude_range_picker.render() function.")
+
+    return mag_range_picker

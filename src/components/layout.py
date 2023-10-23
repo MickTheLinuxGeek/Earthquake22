@@ -9,6 +9,7 @@ Functions:
     create_layout(app: Dash, data: GeoDataFrame) -> html.Div
 """
 
+import logging
 from dash import Dash, html
 import dash_bootstrap_components as dbc
 from geopandas import GeoDataFrame
@@ -22,6 +23,8 @@ from . import (
     header,
     footer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
@@ -54,7 +57,9 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
         header
     """
 
-    return html.Div(
+    logger.info(f"Entered create_layout() function; Created application html layout.")
+
+    eq_layout = html.Div(
         dbc.Container(
             [
                 dbc.Row(
@@ -120,3 +125,7 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
             fluid=True,
         )
     )
+
+    logger.info(f"Exited create_layout() function; Created application html layout.")
+
+    return eq_layout

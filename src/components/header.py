@@ -6,7 +6,10 @@
     render(app: Dash) -> html.Div
  """
 
+import logging
 from dash import Dash, html
+
+logger = logging.getLogger(__name__)
 
 
 def render(app: Dash) -> html.Div:
@@ -23,7 +26,9 @@ def render(app: Dash) -> html.Div:
         A header Div containing the Plotly logo, Plotly url link, and app title.
     """
 
-    return html.Div(
+    logger.info(f"Entered header.render() function.")
+
+    header_div = html.Div(
         className="div-user-controls",
         children=[
             html.A(
@@ -40,3 +45,7 @@ def render(app: Dash) -> html.Div:
             ),
         ],
     )
+    logger.debug(f"html.Div structure of app page header:  \n{header_div}")
+    logger.info(f"Exited header.render() function.")
+
+    return header_div

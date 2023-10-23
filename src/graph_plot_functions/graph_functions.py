@@ -12,6 +12,7 @@ A module of functions, one each per graph plot:
 """
 
 import json
+import logging
 from pathlib import Path
 from dash import html, dcc
 import dash_bootstrap_components as dbc
@@ -19,17 +20,17 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+from pyogrio.errors import DataSourceError
 
 from . import cache
 from . import intensity_dist_functions as idf
+from ..data.mapbox_token_loader import load_mapbox_token
+
+logger = logging.getLogger(__name__)
 
 TIMEOUT = 120
 DATA_DIR = Path(r"./data")
 ZC_DATA_PATH = Path(r"zipcode_data")
-# mapbox_access_token = open(".mapbox_token").read()
-
-with open(".mapbox_token", "r", encoding="utf-8") as mbxt_in:
-    mapbox_access_token = mbxt_in.read()
 
 
 # graph-plot functions
@@ -54,12 +55,28 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
     map.
     """
 
+    logger.info(f"Entered display_intensity_plot_1km() function.")
+
+    logger.debug(f"Event id parameter:  {evnt_id}")
+    logger.debug(f"Selected data parameter:  {sdata}")
+
+    mapbox_access_token = load_mapbox_token()
+
     filename = DATA_DIR / evnt_id / "dyfi_geo_1km.geojson"
 
-    with open(filename, encoding="utf-8") as file1:
-        cdi_geo_1km_geojson = json.load(file1)
+    logger.debug(f"Filename to be read. {filename}")
+
+    try:
+        with open(filename, encoding="utf-8") as file1:
+            cdi_geo_1km_geojson = json.load(file1)
+    except (FileNotFoundError, OSError, IOError, PermissionError) as err:
+        print(f"dyfi_geo_1km.geojson file not present in data directory.  Check App error log.  {err}")
+        logger.critical(f"dyfi_geo_1km.geojson file not in data directory. {err}")
+        raise
 
     cdi_geo_1km_df = pd.json_normalize(cdi_geo_1km_geojson, ["features"])
+
+    logger.debug(f"Input dataframe:  \n{cdi_geo_1km_df}")
 
     www = list(cdi_geo_1km_df["properties.nresp"])
     xxx = list(cdi_geo_1km_df["properties.name"])
@@ -72,6 +89,8 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
     nhh[:, 2] = np.array(zzz).reshape(-1, 1)
     nhh[:, 3] = np.array(www).reshape(-1, 1)
 
+    logger.debug(f"Choroplethmapbox custom data array:  \n{nhh}")
+
     fig = go.Figure()
     fig.add_trace(
         go.Choroplethmapbox(
@@ -79,7 +98,6 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
             locations=cdi_geo_1km_df["properties.name"],
             z=cdi_geo_1km_df["properties.cdi"],
             featureidkey="properties.name",
-            # subplot="mapbox",
             coloraxis="coloraxis",
             below="",
             name="",
@@ -98,7 +116,6 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
             lon=[sdata["points"][0]["lon"]],
             lat=[sdata["points"][0]["lat"]],
             showlegend=False,
-            # subplot="mapbox",
             mode="markers+lines",
             marker={"size": 12, "opacity": 1, "symbol": ["star"]},
             name="",
@@ -154,7 +171,7 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
         margin={"r": 4, "t": 25, "l": 4, "b": 4},
     )
 
-    return html.Div(
+    int_plot_1km = html.Div(
         [
             dcc.Graph(
                 figure=fig,
@@ -183,6 +200,11 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
         ]
     )
 
+    logger.debug(f"display_intensity_plot_1km() return html.Div: \n{int_plot_1km}")
+    logger.info(f"Exited display_intensity_plot_1km() function.")
+
+    return int_plot_1km
+
 
 @cache.memoize(timeout=TIMEOUT)
 def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
@@ -205,12 +227,28 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
     spacing choropleth map.
     """
 
+    logger.info(f"Entered display_intensity_plot_10km() function.")
+
+    logger.debug(f"Event id parameter:  {evnt_id}")
+    logger.debug(f"Selected data parameter:  {sdata}")
+
+    mapbox_access_token = load_mapbox_token()
+
     filename = DATA_DIR / evnt_id / "dyfi_geo_10km.geojson"
 
-    with open(filename, encoding="utf-8") as file2:
-        cdi_geo_10km_geojson = json.load(file2)
+    logger.debug(f"Input filename:  {filename}")
+
+    try:
+        with open(filename, encoding="utf-8") as file2:
+            cdi_geo_10km_geojson = json.load(file2)
+    except (FileNotFoundError, IOError, OSError, PermissionError) as err:
+        print(f"dyfi_geo_10km.geojson file not present in data directory.  Check App error log.  {err}")
+        logger.critical(f"dyfi_geo_10km.geojson file not found in data directory.  {err}")
+        raise
 
     cdi_geo_10km_df = pd.json_normalize(cdi_geo_10km_geojson, ["features"])
+
+    logger.debug(f"Input dataframe:  \n{cdi_geo_10km_df}")
 
     www = list(cdi_geo_10km_df["properties.nresp"])
     xxx = list(cdi_geo_10km_df["properties.name"])
@@ -223,6 +261,8 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
     nhh[:, 2] = np.array(zzz).reshape(-1, 1)
     nhh[:, 3] = np.array(www).reshape(-1, 1)
 
+    logger.debug(f"Choroplethmapbox custom data array:  \n{nhh}")
+
     fig = go.Figure()
     fig.add_trace(
         go.Choroplethmapbox(
@@ -230,7 +270,6 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
             locations=cdi_geo_10km_df["properties.name"],
             z=cdi_geo_10km_df["properties.cdi"],
             featureidkey="properties.name",
-            # subplot="mapbox2",
             coloraxis="coloraxis",
             name="",
             customdata=nhh,
@@ -248,7 +287,6 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
             lon=[sdata["points"][0]["lon"]],
             lat=[sdata["points"][0]["lat"]],
             showlegend=False,
-            # subplot="mapbox2",
             mode="markers+lines",
             marker={"size": 12, "opacity": 1, "symbol": ["star"]},
             name="",
@@ -304,7 +342,7 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
         margin={"r": 4, "t": 25, "l": 4, "b": 4},
     )
 
-    return html.Div(
+    int_plot_10km = html.Div(
         [
             dcc.Graph(
                 figure=fig,
@@ -333,6 +371,11 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
         ]
     )
 
+    logger.debug(f"display_intensity_plot_10km() return html.Div: \n{int_plot_10km}")
+    logger.info(f"Exited display_intensity_plot_10km() function.")
+
+    return int_plot_10km
+
 
 @cache.memoize(timeout=TIMEOUT)
 def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
@@ -355,9 +398,27 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     choropleth map.
     """
 
+    logger.info(f"Entered display_zip_plot() function.")
+
+    logger.debug(f"Event id parameter:  {evnt_id}")
+    logger.debug(f"Selected data parameter:  {sdata}")
+
+    mapbox_access_token = load_mapbox_token()
+
     filename = DATA_DIR / evnt_id / "cdi_zip.csv"
-    cdi_zip_df = pd.read_csv(filename)
+
+    logger.debug(f"Input filename:  {filename}")
+
+    try:
+        cdi_zip_df = pd.read_csv(filename)
+    except (FileNotFoundError, OSError, IOError, PermissionError) as err:
+        print(f"cdi_zip.csv file not present in data directory.  Check App error log.  {err}")
+        logger.critical(f"cdi_zip.csv file not found in data directory.  {err}")
+        raise
+
     cdi_zip_df.rename({"# Columns: ZIP/Location": "ZIP/Location"}, axis=1, inplace=True)
+
+    logger.debug(f"Input dataframe:  \n{cdi_zip_df}")
 
     # Using NC, SC, & GA region zipcodes instead of just SC
     # zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.geojson"
@@ -368,8 +429,15 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
 
     zc_filename = DATA_DIR / ZC_DATA_PATH / "cb_2010_45_zcta510.shp"
 
+    logger.debug(f"SC cartographic boundary zipcode shapefile:  {zc_filename}")
+
     # in geopandas 1.0 the pyogrio engine will be default
-    sc_zip_df = gpd.read_file(zc_filename, engine="pyogrio")
+    try:
+        sc_zip_df = gpd.read_file(zc_filename, engine="pyogrio")
+    except DataSourceError as err:
+        print(f"cb_2010_45_zcta510.shp file not present in data/zipcode_data directory.  {err}")
+        logger.critical(f"SC cartographic boundary zipcode shapefile not found.  {err}")
+        raise
 
     # sc_zip_df = gpd.read_file(r"/home/mick/Work/data_science/SC_earthquake/data/zipcode_data/cb_2010_45_zcta510.shp")
 
@@ -381,15 +449,16 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     d_f = cdi_zip_df.copy()
     geo_dff = (
         # gpd.GeoDataFrame(sc_zip_df).merge(df, left_on="ZCTA5CE10", right_on="ZIP/Location").set_index("ZIP/Location")
-        gpd.GeoDataFrame(sc_zip_df).merge(
-            d_f, left_on="Zipcode", right_on="ZIP/Location"
-        )
+        gpd.GeoDataFrame(sc_zip_df).merge(d_f, left_on="Zipcode", right_on="ZIP/Location")
     )
 
-    geo_dff = geo_dff[
-        ["Zipcode", "CDI", "Response_Count", "Hypocentral_Distance", "geometry"]
-    ]
+    geo_dff = geo_dff[["Zipcode", "CDI", "Response_Count", "Hypocentral_Distance", "geometry"]]
+
+    logger.debug(f"zipcode dataframe post merge of the cdi_zip_df and SC cb zipcode dataframe:  \n{geo_dff}")
+
     state_zip_json = json.loads(geo_dff.to_json())
+
+    logger.debug(f"Merged zipcode file converted to json:  \n{state_zip_json}")
 
     www = list(d_f["CDI"])
     xxx = list(d_f["ZIP/Location"])
@@ -402,6 +471,8 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     nhh[:, 2] = np.array(zzz).reshape(-1, 1)
     nhh[:, 3] = np.array(www).reshape(-1, 1)
 
+    logger.debug(f"Choroplethmapbox custom data array:  \n{nhh}")
+
     fig = go.Figure()
     fig.add_trace(
         go.Choroplethmapbox(
@@ -409,7 +480,6 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
             locations=d_f["ZIP/Location"],
             z=d_f["CDI"],
             featureidkey="properties.Zipcode",
-            # featureidkey="properties.ZCTA5CE10",
             marker={"opacity": 0.3, "line_width": 0.5},
             showscale=True,
             coloraxis="coloraxis",
@@ -441,7 +511,6 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
     )
 
     fig.update_layout(
-        # mapbox_style="open-street-map",
         mapbox_style="streets",
         mapbox_zoom=7.5,
         mapbox_center={
@@ -475,7 +544,7 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
         showlegend=False,
     )
     # return fig
-    return html.Div(
+    zip_plot = html.Div(
         [
             dcc.Graph(
                 figure=fig,
@@ -504,6 +573,11 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
         ],
         style={"width": "100%"},
     )
+
+    logger.debug(f"display_zip_plot() return html.Div: \n{zip_plot}")
+    logger.info(f"Exited display_zip_plot() function.")
+
+    return zip_plot
 
 
 @cache.memoize(timeout=TIMEOUT)
@@ -551,8 +625,22 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
         create_median()
     """
 
+    logger.info(f"Entered display_intensity_dist_plot() function.")
+
+    logger.debug(f"Event id parameter:  {evnt_id}")
+
     filename = DATA_DIR / evnt_id / "dyfi_plot_atten.json"
-    intensity_dist_df = pd.read_json(filename)
+
+    logger.debug(f"Input filename:  {filename}")
+
+    try:
+        intensity_dist_df = pd.read_json(filename)
+    except (FileNotFoundError, IOError, OSError, PermissionError) as err:
+        print(f"dyfi_plot_atten.json file not present in data directory.  Check App error log.  {err}")
+        logger.critical(f"dyfi_plot_atten.json file not found in data directory.  {err}")
+        raise
+
+    logger.debug(f"Input dataframe:  \n{intensity_dist_df}")
 
     fig = go.Figure()
     for dsi in range(len(intensity_dist_df)):
@@ -561,20 +649,42 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
         # pylint: disable=no-member
         dataset_df = pd.DataFrame(intensity_dist_df.loc[dsi, "datasets"])
 
+        logger.debug(f"Intensity distance datasets dataframe:  \n{dataset_df}")
+
         if dataset_df["class"][0] == "scatterplot1":
+            logger.debug(f"Calling create_scatter_plot1() function.")
+
             fig = idf.create_scatter_plot1(dataset_df, intensity_dist_df, fig)
 
+            logger.debug(f"Returned from create_scatter_plot1() function.")
+
         elif dataset_df["class"][0] == "estimated1":
+            logger.debug(f"Calling create_estimated1() function.")
+
             fig = idf.create_estimated1(dataset_df, fig)
 
+            logger.debug(f"Returned from create_estimated1() function.")
+
         elif dataset_df["class"][0] == "estimated2":
+            logger.debug(f"Calling create_estimated2() function.")
+
             fig = idf.create_estimated2(dataset_df, fig)
 
+            logger.debug(f"Returned from create_estimated2() function.")
+
         elif dataset_df["class"][0] == "binned":
+            logger.debug(f"Calling create_mean_binned() function.")
+
             fig = idf.create_mean_binned(dataset_df, intensity_dist_df, fig)
 
+            logger.debug(f"Returned from create_mean_binned() function.")
+
         elif dataset_df["class"][0] == "median":
+            logger.debug(f"Calling create_median() function.")
+
             fig = idf.create_median(dataset_df, intensity_dist_df, fig)
+
+            logger.debug(f"Returned from create_median() function.")
 
     fig.update_layout(
         margin={"r": 4, "t": 25, "l": 4, "b": 4},
@@ -587,8 +697,11 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
             "borderwidth": 1.0,
         },
     )
+
+    logger.debug(f"Intensity distance figure structure: \n{fig}")
+
     # return fig
-    return html.Div(
+    int_dist = html.Div(
         [
             dcc.Graph(
                 figure=fig,
@@ -610,6 +723,11 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
         ]
     )
 
+    logger.debug(f"display_intensity_dist_plot() return html.Div: \n{int_dist}")
+    logger.info(f"Exited display_intensity_dist_plot() function.")
+
+    return int_dist
+
 
 @cache.memoize(timeout=TIMEOUT)
 def display_response_time_plot(evnt_id: str) -> html.Div:
@@ -630,19 +748,40 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
     responses vs. time.
     """
 
+    logger.info(f"Entered display_response_time_plot() function.")
+
+    logger.debug(f"Event id parameter:  {evnt_id}")
+
     filename = DATA_DIR / evnt_id / "dyfi_plot_numresp.json"
-    resp_time_df = pd.read_json(filename)
+
+    logger.debug(f"Input filename:  {filename}")
+
+    try:
+        resp_time_df = pd.read_json(filename)
+    except (FileNotFoundError, IOError, OSError, PermissionError) as err:
+        print(f"dyfi_plot_numresp.json file not present in data directory.  Check App error log.  {err}")
+        logger.critical(f"dyfi_plot_numresp.json file not found in data directory.  {err}")
+        raise
 
     # pylint: disable=no-member
     resp_time_ds_df = pd.DataFrame(resp_time_df.datasets[0])
 
     resp_time_plot_df = resp_time_ds_df.from_records(data=resp_time_ds_df.data)
 
+    logger.debug(f"Input dataframe:  \n{resp_time_plot_df}")
+
     xii_i = list(resp_time_plot_df.x)
     yii_i = list(resp_time_plot_df.y)
     xlabel = resp_time_df["xlabel"][0]
     ylabel = resp_time_df["ylabel"][0]
     title = resp_time_df["title"][0]
+
+    logger.debug(f"Scatter plot input variables:")
+    logger.debug(f"x coordinates:  {xii_i}")
+    logger.debug(f"y coordinates:  {yii_i}")
+    logger.debug(f"xlabel:  {xlabel}")
+    logger.debug(f"ylabel:  {ylabel}")
+    logger.debug(f"Title:  {title}")
 
     fig = go.Figure()
     fig.add_trace(
@@ -652,8 +791,7 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
             mode="lines+markers",
             line={"color": "green", "width": 2},
             marker={"color": "green", "size": 6},
-            hovertemplate="Responses:  %{y}<br>"
-            + "Time Since Event:  %{x}<extra></extra>",
+            hovertemplate="Responses:  %{y}<br>" + "Time Since Event:  %{x}<extra></extra>",
         )
     )
     fig.update_xaxes(title_text=xlabel)
@@ -667,7 +805,7 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
         margin={"r": 4, "t": 25, "l": 4, "b": 4},
     )
 
-    return html.Div(
+    resp_time = html.Div(
         [
             dcc.Graph(
                 figure=fig,
@@ -689,6 +827,11 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
         ]
     )
 
+    logger.debug(f"display_response_time_plot() return html.Div: \n{resp_time}")
+    logger.info(f"Exited display_response_time_plot() function.")
+
+    return resp_time
+
 
 @cache.memoize(timeout=TIMEOUT)
 def display_dyfi_responses_tbl(evnt_id: str) -> html.Div:
@@ -709,29 +852,41 @@ def display_dyfi_responses_tbl(evnt_id: str) -> html.Div:
     html.Div which contains a dbc.Table table -- Object that contains the dbc.Table
     """
 
-    filename = DATA_DIR / evnt_id / "cdi_zip.csv"
-    dyfi_responses_df = pd.read_csv(filename, index_col=False)
+    logger.info(f"Entered display_dyfi_responses_tbl() function.")
 
-    table_header = [
-        html.Thead(html.Tr([html.Th(i) for i in dyfi_responses_df.columns]))
-    ]
+    logger.debug(f"Event id parameter:  {evnt_id}")
+
+    filename = DATA_DIR / evnt_id / "cdi_zip.csv"
+
+    logger.debug(f"Input filename:  {filename}")
+
+    try:
+        dyfi_responses_df = pd.read_csv(filename, index_col=False)
+    except (FileNotFoundError, IOError, OSError, PermissionError) as err:
+        print(f"cdi_zip.csv file not present in data directory.  Check App error log.  {err}")
+        logger.critical(f"cdi_zip.csv file not found in data directory.  {err}")
+        raise
+
+    logger.debug(f"DYFI responses dataframe: \n{dyfi_responses_df}")
+
+    table_header = [html.Thead(html.Tr([html.Th(i) for i in dyfi_responses_df.columns]))]
 
     table_body = [
-        html.Tbody(
-            [
-                html.Tr([html.Td(str(c)) for c in r])
-                for r in dyfi_responses_df.to_records(index=False)
-            ]
-        )
+        html.Tbody([html.Tr([html.Td(str(c)) for c in r]) for r in dyfi_responses_df.to_records(index=False)])
     ]
     # noinspection PyTypeChecker
-    table = dbc.Table(
-        table_header + table_body, striped=True, hover=True
-    )  # Table bordered is done in style.css
+    table = dbc.Table(table_header + table_body, striped=True, hover=True)  # Table bordered is done in style.css
 
-    return html.Div(
+    logger.debug(f"CDI zipcode table structure: \n{table}")
+
+    zip_tbl = html.Div(
         table,
         className="table-wrapper table-responsive",
         style={"width": "100%"},
         # style={"max-height": "54vh", "width": "100%"},
     )
+
+    logger.debug(f"display_dyfi_responses_tbl() return html.Div: \n{zip_tbl}")
+    logger.info(f"Exited display_dyfi_responses_tbl() function.")
+
+    return zip_tbl

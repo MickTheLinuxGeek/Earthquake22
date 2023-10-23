@@ -1,6 +1,9 @@
 """ Utility function to calculate a map's zoom level and center based on longitueds and latitudes passed in. """
 
+import logging
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def determine_zoom_level(longitudes=None, latitudes=None):
@@ -15,6 +18,10 @@ def determine_zoom_level(longitudes=None, latitudes=None):
     Returns the appropriate zoom-level for these plotly-mapbox-graphics along with
     the center coordinate tuple of all provided coordinate tuples.
     """
+
+    logger.info(f"Entered determine_zoom_level() function.")
+    logger.debug(f"longitudes parameter:  \n{longitudes}")
+    logger.debug(f"latitudes parameter:  \n{latitudes}")
 
     # Check whether both latitudes and longitudes have been passed,
     # or if the list lengths don't match
@@ -45,4 +52,9 @@ def determine_zoom_level(longitudes=None, latitudes=None):
     )
 
     # Finally, return the zoom level and the associated boundary-box center coordinates
+
+    logger.debug(f"Calculated zoom level:  {zoom}")
+    logger.debug(f"Calculated map center coordinates:  {b_box['center']}")
+    logger.info(f"Exited determine_zoom_level() function.")
+
     return zoom, b_box["center"]

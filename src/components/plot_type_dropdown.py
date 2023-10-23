@@ -6,7 +6,10 @@
     render() -> html.Div
  """
 
+import logging
 from dash import html, dcc
+
+logger = logging.getLogger(__name__)
 
 
 def render() -> html.Div:
@@ -18,7 +21,9 @@ def render() -> html.Div:
         html.Div:  Contains a html.Label and dcc.Dropdown components.
     """
 
-    return html.Div(
+    logger.info(f"Entered plot_type_dropdown.render() function.")
+
+    plot_type_drop = html.Div(
         children=[
             html.Label("Plot Type"),
             dcc.Dropdown(
@@ -40,3 +45,7 @@ def render() -> html.Div:
             ),
         ],
     )
+
+    logger.info(f"Exited plot_type_dropdown.render() function.")
+
+    return plot_type_drop

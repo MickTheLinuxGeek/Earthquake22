@@ -8,9 +8,14 @@ Functions:
     load_event_data(file: Path) -> gpd.GeoDataFrame
 """
 
+import logging
 from pathlib import Path
-import geopandas as gpd
 import pandas as pd
+import geopandas as gpd
+import pyogrio.errors
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_event_data(file: Path) -> gpd.GeoDataFrame:
@@ -33,15 +38,21 @@ def load_event_data(file: Path) -> gpd.GeoDataFrame:
     """
 
     # Read geoJSON file into a geopandas.GeoDataFrame
-    geo_df = gpd.read_file(file, engine="pyogrio")
+    # geo_df = gpd.read_file(file, engine="pyogrio")
 
-    # The time column in the dataframe is a Unix epoch time in ms.  The following two statements convert that epoch time
-    # into event date and event time columns that are added to the dataframe.
+    logger.info("Entered load_event_data() function.")
+
+    try:
+        geo_df = gpd.read_file(file, engine="pyogrio")
+    except pyogrio.errors.DataSourceError as err:
+        print(f"SC_Earthquake.geojson file missing from data directory.  Run usgs_api to fix.  {err}")
+        logger.critical(f"SC_Earthquake.geojson file is missing.  {err}  Run usgs_api.py to download app data files.")
+        raise
+
+    # The time column in the dataframe is a Unix epoch time in ms.  The following two statements convert that epoch
+    # time into event date and event time columns that are added to the dataframe.
     geo_df["Event_Date"] = (
-        pd.to_datetime(geo_df.time, unit="ms")
-        .dt.tz_localize("UTC")
-        .dt.tz_convert("America/New_York")
-        .dt.date
+        pd.to_datetime(geo_df.time, unit="ms").dt.tz_localize("UTC").dt.tz_convert("America/New_York").dt.date
     )
 
     geo_df["Event_Time"] = (
@@ -85,5 +96,8 @@ def load_event_data(file: Path) -> gpd.GeoDataFrame:
 
     geo_df["Depth"] = geo_df.geometry.z
     geo_df["Mag"] = geo_df.Mag.round(1)
+
+    logger.debug(f"Wrangled dataframe, geo_df after SC_Earthquakes.geojson file read.  \n{geo_df}")
+    logger.info("Exited load_event_data() function.")
 
     return geo_df
