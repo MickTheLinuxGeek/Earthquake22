@@ -16,8 +16,9 @@ __status__ = "development"
 # TODO:  Use USGS api to retrieve data instead of reading downloaded data files
 # TODO:  Use a nav bar in place of plot type dropdown
 #
-# TODO:  Add logging
 # TODO:  Add GA & NC state zipcode shapefiles for zip graph-plot -- WIP
+#
+# Add logging - Completed - 10/23/2023
 #
 # sm, md, lg mobile responsive screen sizes need work - Completed 10/01/2023
 #
@@ -71,7 +72,7 @@ from src.components.layout import create_layout
 # event_file = DATA_DIR / "SC_Earthquake.geojson"
 # geo_df = gpd.read_file(event_file)
 #
-# # TODO:  From here to app definition should be done prior to running the app; usgs_api.py (api module)
+# From here to app definition should be done prior to running the app; usgs_api.py (api module)
 #
 # geo_df["Event_Date"] = (
 #     pd.to_datetime(geo_df.time, unit="ms")
@@ -514,14 +515,14 @@ from src.components.layout import create_layout
 #         gpd.GeoDataFrame(sc_zip_df).merge(
 #             df, left_on="Zipcode", right_on="ZIP/Location"
 #         )
-#         # .set_index("ZIP/Location")  # FIXME:  Remove this line
+#         # .set_index("ZIP/Location")  # Remove this line
 #     )
 #
 #     geo_dff = geo_dff[
 #         ["Zipcode", "CDI", "Response_Count", "Hypocentral_Distance", "geometry"]
 #     ]
 #
-#     print(geo_dff)  # FIXME:  Remove this line
+#     print(geo_dff)  # Remove this line
 #
 #     state_zip_json = json.loads(geo_dff.to_json())
 #
