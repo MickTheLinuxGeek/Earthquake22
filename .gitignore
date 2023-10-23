@@ -5,3 +5,4 @@
 /gp_cache/
 /.flake8
 /.pylintrc
+/logs/app_log.log
