@@ -9,7 +9,7 @@ This is the module that is launched to run the application.
 __author__ = "Michael Biel"
 __copyright__ = "Copyright 2023, MAB-Geo Data Science, The Earthquake Vis. Project"
 __license__ = "MIT"
-__version__ = "1.1.0"
+__version__ = "1.0.0"
 __maintainer__ = "Michael Biel"
 __email__ = "mick.the.linux.geek@hotmail.com"
 __status__ = "development"
