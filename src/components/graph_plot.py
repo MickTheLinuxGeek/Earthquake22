@@ -6,6 +6,7 @@ Functions
     render(app: Dash) -> html.Div
 """
 
+import logging
 from dash import Dash, html, Input, Output
 import dash_bootstrap_components as dbc
 from pyogrio.errors import DataSourceError
@@ -21,6 +22,8 @@ from ..graph_plot_functions.graph_functions import (
 
 DROPDOWN_DISABLED = True
 DROPDOWN_NOT_DISABLED = False
+
+logger = logging.getLogger(__name__)
 
 
 def render(app: Dash) -> html.Div:
@@ -38,6 +41,8 @@ def render(app: Dash) -> html.Div:
     html.Div : html.Div(id="graph-plot")
         An html.Div that contains the graph-plot from the app callback.
     """
+
+    logger.info(f"Entered graph_plot.render() function.")
 
     @app.callback(
         Output("graph-plot", "children"),
@@ -79,6 +84,8 @@ def render(app: Dash) -> html.Div:
             display_dyfi_responses_tbl(event_id)
         """
 
+        logger.info(f"Entered plot_graphs() dash callback function.")
+
         try:
             if selected_data is None:
                 return (
@@ -103,8 +110,10 @@ def render(app: Dash) -> html.Div:
                     ),
                     DROPDOWN_DISABLED,
                 )
-                # else:
             event_id = selected_data["points"][0]["customdata"][8]
+
+            logger.debug(f"Event id selected:  {event_id}")
+            logger.debug(f"Number of DYFI responses:  {selected_data['points'][0]['customdata'][6]}")
 
             # if DYFI felt is zero
             if selected_data["points"][0]["customdata"][6] == 0:
@@ -124,6 +133,11 @@ def render(app: Dash) -> html.Div:
                     DROPDOWN_DISABLED,
                 )
             graph_result = None
+
+            logger.debug(f"Plot type:  {plot_type}")
+            logger.debug(f"Event id:  {event_id}")
+            logger.debug(f"Selected data:  {selected_data}")
+
             if plot_type == "Intensity Plot(1km)":
                 graph_result = display_intensity_plot_1km(event_id, selected_data)
 
@@ -144,6 +158,8 @@ def render(app: Dash) -> html.Div:
 
             return graph_result, DROPDOWN_NOT_DISABLED
         except (FileNotFoundError, IOError, OSError, PermissionError, DataSourceError) as err:
+            print(f"graph_plot.py:  Application data files missing!  Check App error log.  {err}")
+            logger.critical(f"Application data missing!  Check App error log.  {err}")
             # plot_graphs() return
             return (
                 html.Div(
@@ -163,4 +179,5 @@ def render(app: Dash) -> html.Div:
             )
 
     # render() return
+    logger.info(f"Returned from graph_plot.render() function.")
     return html.Div(id="graph-plot")
