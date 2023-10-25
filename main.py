@@ -17,6 +17,7 @@ __status__ = "development"
 import sys
 import getopt
 import logging
+import logging.handlers as handlers
 from pathlib import Path
 
 from pandas import set_option
@@ -38,8 +39,20 @@ log_file = LOG_PATH / "app_log.log"
 set_option("display.max_columns", 32)
 set_option("display.width", 132)
 
+logger = logging.getLogger("sc_earthquake_app")
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-def main(argv: list) -> None:
+# log_handler = handlers.RotatingFileHandler(log_file, mode="w", maxBytes=5 * 1024 * 1024, backupCount=3)
+log_handler = logging.FileHandler(log_file, mode="w")
+log_handler.setLevel(logging.DEBUG)
+log_handler.setFormatter(formatter)
+
+logger.addHandler(log_handler)
+
+
+# def main(argv: list) -> None:
+def main() -> None:
     """The main function of the main app module.
 
     The main function of the main module.  It performs the following tasks:
@@ -50,32 +63,33 @@ def main(argv: list) -> None:
         * clears the cache when the app is closed
     """
 
-    try:
-        opts, args = getopt.getopt(argv, "hl:", ["help", "log="])
-    except getopt.GetoptError as err:
-        print(f"Invalid command-line argument:  {err}")
-        print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-        print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-            print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-            sys.exit()
-        elif opt in ("-l", "--log"):
-            loglevel = arg
+    # try:
+    #     opts, args = getopt.getopt(argv, "hl:", ["help", "log="])
+    # except getopt.GetoptError as err:
+    #     print(f"Invalid command-line argument:  {err}")
+    #     print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+    #     print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+    #     sys.exit(2)
+    # for opt, arg in opts:
+    #     if opt in ("-h", "--help"):
+    #         print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+    #         print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+    #         sys.exit()
+    #     elif opt in ("-l", "--log"):
+    #         loglevel = arg
+    #
+    #         numeric_level = getattr(logging, loglevel.upper(), None)
+    #         if not isinstance(numeric_level, int):
+    #             raise ValueError(f"Invalid log level: {loglevel}")
+    #
+    #         logging.basicConfig(
+    #             level=numeric_level,
+    #             filename=log_file,
+    #             filemode="w",
+    #             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    #         )
 
-            numeric_level = getattr(logging, loglevel.upper(), None)
-            if not isinstance(numeric_level, int):
-                raise ValueError(f"Invalid log level: {loglevel}")
-
-            logging.basicConfig(
-                level=numeric_level,
-                filename=log_file,
-                filemode="w",
-                format="%(asctime)s:%(name)s:%(levelname)s:%(message)s",
-            )
-
+    logger.info(f"Application Started")
     try:
         data = load_event_data(event_file)
     except pyogrio.errors.DataSourceError as err:
@@ -108,4 +122,5 @@ def main(argv: list) -> None:
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    # main(sys.argv[1:])
+    main()
