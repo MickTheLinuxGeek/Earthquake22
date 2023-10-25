@@ -15,7 +15,6 @@ __email__ = "mick.the.linux.geek@hotmail.com"
 __status__ = "development"
 
 import sys
-import getopt
 import logging
 import logging.handlers as handlers
 from pathlib import Path
@@ -39,20 +38,21 @@ log_file = LOG_PATH / "app_log.log"
 set_option("display.max_columns", 32)
 set_option("display.width", 132)
 
+rfh = logging.handlers.RotatingFileHandler(
+    filename=log_file, mode="a", maxBytes=5 * 1024 * 1024, backupCount=2, encoding="utf-8", delay=True
+)
+
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[rfh])
+
 logger = logging.getLogger("sc_earthquake_app")
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-# log_handler = handlers.RotatingFileHandler(log_file, mode="w", maxBytes=5 * 1024 * 1024, backupCount=3)
-log_handler = logging.FileHandler(log_file, mode="w")
-log_handler.setLevel(logging.DEBUG)
-log_handler.setFormatter(formatter)
-
-logger.addHandler(log_handler)
+# Already using pathlib; Use pathlib methods instead of importing os module
+if log_file.exists():
+    log_file.unlink(missing_ok=True)
 
 
-# def main(argv: list) -> None:
 def main() -> None:
+    # def main(argv: list) -> None:
     """The main function of the main app module.
 
     The main function of the main module.  It performs the following tasks:
