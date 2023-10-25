@@ -22,6 +22,7 @@ from ..graph_plot_functions.graph_functions import (
 
 DROPDOWN_DISABLED = True
 DROPDOWN_NOT_DISABLED = False
+DEFAULT_PLOT_TYPE = "Intensity Plot(10km)"
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,7 @@ def render(app: Dash) -> html.Div:
     @app.callback(
         Output("graph-plot", "children"),
         Output("plot-type-dropdown", "disabled"),
+        Output("plot-type-dropdown", "value"),
         Input("dcc-map-graph", "selectedData"),
         Input("plot-type-dropdown", "value"),
         prevent_initial_call=True,
@@ -109,6 +111,7 @@ def render(app: Dash) -> html.Div:
                         className="center",
                     ),
                     DROPDOWN_DISABLED,
+                    DEFAULT_PLOT_TYPE,
                 )
             event_id = selected_data["points"][0]["customdata"][8]
 
@@ -131,6 +134,7 @@ def render(app: Dash) -> html.Div:
                         className="center",
                     ),
                     DROPDOWN_DISABLED,
+                    plot_type,
                 )
             graph_result = None
 
@@ -156,7 +160,7 @@ def render(app: Dash) -> html.Div:
             if plot_type == "DYFI Responses":
                 graph_result = display_dyfi_responses_tbl(event_id)
 
-            return graph_result, DROPDOWN_NOT_DISABLED
+            return graph_result, DROPDOWN_NOT_DISABLED, plot_type
         except (FileNotFoundError, IOError, OSError, PermissionError, DataSourceError) as err:
             print(f"graph_plot.py:  Application data files missing!  Check App error log.  {err}")
             logger.critical(f"Application data missing!  Check App error log.  {err}")
