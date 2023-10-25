@@ -47,7 +47,7 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
 
     Functions:
     --------------
-    The following component render function are called within the layout:
+    The following component render functions are called within the layout:
 
         event_date_picker_range,
         magnitude_range_picker,
