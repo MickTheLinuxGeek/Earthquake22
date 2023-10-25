@@ -460,8 +460,6 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
 
     state_zip_json = json.loads(geo_dff.to_json())
 
-    logger.debug(f"Merged zipcode file converted to json:  \n{state_zip_json}")
-
     www = list(d_f["CDI"])
     xxx = list(d_f["ZIP/Location"])
     yyy = list(d_f["Response_Count"])
