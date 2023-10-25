@@ -121,7 +121,8 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
             name="",
             text=[sdata["points"][0]["customdata"][1]],
             customdata=[sdata["points"][0]["customdata"][4]],
-            hoverlabel={"bgcolor": "#323232"},
+            # hoverlabel={"bgcolor": "#323232"},
+            hoverlabel={"bgcolor": "#2F4F4F"},
             hovertemplate="Epicenter -- Latitude:  %{lat}<br>"
             + "                -- Longitude:  %{lon}<br>"
             + "                -- Magnitude:  %{customdata}<br>"
@@ -292,7 +293,8 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
             name="",
             text=[sdata["points"][0]["customdata"][1]],
             customdata=[sdata["points"][0]["customdata"][4]],
-            hoverlabel={"bgcolor": "#323232"},
+            # hoverlabel={"bgcolor": "#A0522D"},
+            hoverlabel={"bgcolor": "#2F4F4F"},
             hovertemplate="Epicenter -- Latitude:  %{lat}<br>"
             + "                -- Longitude:  %{lon}<br>"
             + "                -- Magnitude:  %{customdata}<br>"
@@ -502,7 +504,8 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:
             name="",
             text=[sdata["points"][0]["customdata"][1]],
             customdata=[sdata["points"][0]["customdata"][4]],
-            hoverlabel={"bgcolor": "#323232"},
+            # hoverlabel={"bgcolor": "#323232"},
+            hoverlabel={"bgcolor": "#2F4F4F"},
             hovertemplate="Epicenter -- Latitude:  %{lat}<br>"
             + "                -- Longitude:  %{lon}<br>"
             + "                -- Magnitude:  %{customdata}<br>"
