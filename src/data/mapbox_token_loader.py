@@ -1,9 +1,30 @@
+""" Module for loading mapbox API access token.
+
+    Function reads in the mapbox API access token from the hidden file .mapbox_token.
+
+    Functions:
+    ----------
+
+        load_mapbox_token() -> str
+"""
+
+
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 def load_mapbox_token() -> str:
+    """Function to read in the mapbox API access token
+
+    Function reads in the mapbox API access token from the hidden file .mapbox_token.
+
+    Returns:
+    --------
+    mapbox_access_token : str
+        A variable containing the mapbox API access token string.
+    """
+
     logger.info(f"Entered load_mapbox_token() function.")
 
     try:
