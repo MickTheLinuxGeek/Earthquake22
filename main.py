@@ -39,7 +39,7 @@ set_option("display.max_columns", 32)
 set_option("display.width", 132)
 
 rfh = logging.handlers.RotatingFileHandler(
-    filename=log_file, mode="a", maxBytes=5 * 1024 * 1024, backupCount=2, encoding="utf-8", delay=True
+    filename=log_file, mode="a", maxBytes=5 * 1024 * 1024, backupCount=5, encoding="utf-8", delay=True
 )
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[rfh])
