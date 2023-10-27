@@ -118,20 +118,19 @@ def render(app: Dash) -> html.Div:
             logger.debug(f"Event id selected:  {event_id}")
             logger.debug(f"Number of DYFI responses:  {selected_data['points'][0]['customdata'][6]}")
 
-            # if DYFI felt is zero
+            # if DYFI felt/responses = zero
             if selected_data["points"][0]["customdata"][6] == 0:
                 return (
                     html.Div(
-                        html.P("""Event has no reported DYFI information."""),
-                        style={
-                            "text-align": "center",
-                            "margin": "10px 0",
-                            "padding": "5px",
-                            "border": "1px solid #999",
-                            "display": "flex",
-                            "flex-direction": "column",
-                        },
-                        className="center",
+                        dbc.Alert(
+                            [
+                                html.H4("No Data Reported", className="mt-0"),
+                                html.Hr(),
+                                html.P("""Event has no reported DYFI information.""", className="mb-0"),
+                            ],
+                            color="warning",
+                        ),
+                        style={"text-align": "center"},
                     ),
                     DROPDOWN_DISABLED,
                     plot_type,
@@ -180,6 +179,7 @@ def render(app: Dash) -> html.Div:
                     style={"text-align": "center"},
                 ),
                 DROPDOWN_NOT_DISABLED,
+                DEFAULT_PLOT_TYPE,
             )
 
     # render() return
