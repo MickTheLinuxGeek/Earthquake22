@@ -16,6 +16,7 @@ __status__ = "development"
 
 import sys
 import logging
+import getopt
 import logging.handlers as handlers
 from pathlib import Path
 
@@ -38,21 +39,14 @@ log_file = LOG_PATH / "app_log.log"
 set_option("display.max_columns", 32)
 set_option("display.width", 132)
 
-rfh = logging.handlers.RotatingFileHandler(
-    filename=log_file, mode="a", maxBytes=5 * 1024 * 1024, backupCount=5, encoding="utf-8", delay=True
-)
-
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[rfh])
-
-logger = logging.getLogger("sc_earthquake_app")
-
+# Delete log files each time the app starts
 # Already using pathlib; Use pathlib methods instead of importing os module
 if log_file.exists():
-    log_file.unlink(missing_ok=True)
+    for file in list(LOG_PATH.glob("*")):
+        file.unlink(missing_ok=True)
 
 
-def main() -> None:
-    # def main(argv: list) -> None:
+def main(argv: list) -> None:
     """The main function of the main app module.
 
     The main function of the main module.  It performs the following tasks:
@@ -63,33 +57,37 @@ def main() -> None:
         * clears the cache when the app is closed
     """
 
-    # try:
-    #     opts, args = getopt.getopt(argv, "hl:", ["help", "log="])
-    # except getopt.GetoptError as err:
-    #     print(f"Invalid command-line argument:  {err}")
-    #     print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-    #     print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-    #     sys.exit(2)
-    # for opt, arg in opts:
-    #     if opt in ("-h", "--help"):
-    #         print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-    #         print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-    #         sys.exit()
-    #     elif opt in ("-l", "--log"):
-    #         loglevel = arg
-    #
-    #         numeric_level = getattr(logging, loglevel.upper(), None)
-    #         if not isinstance(numeric_level, int):
-    #             raise ValueError(f"Invalid log level: {loglevel}")
-    #
-    #         logging.basicConfig(
-    #             level=numeric_level,
-    #             filename=log_file,
-    #             filemode="w",
-    #             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    #         )
+    try:
+        opts, args = getopt.getopt(argv, "hl:", ["help", "log="])
+    except getopt.GetoptError as err:
+        print(f"Invalid command-line argument:  {err}")
+        print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+        print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+            print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+            sys.exit()
+        elif opt in ("-l", "--log"):
+            loglevel = arg
 
-    logger.info(f"Application Started")
+            numeric_level = getattr(logging, loglevel.upper(), None)
+            if not isinstance(numeric_level, int):
+                raise ValueError(f"Invalid log level: {loglevel}")
+
+            rfh = logging.handlers.RotatingFileHandler(
+                filename=log_file, mode="a", maxBytes=5 * 1024 * 1024, backupCount=5, encoding="utf-8", delay=True
+            )
+
+            logging.basicConfig(
+                level=numeric_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[rfh]
+            )
+
+            logger = logging.getLogger("sc_earthquake_app")  #
+
+            logger.info(f"Application Started")
+
     try:
         data = load_event_data(event_file)
     except pyogrio.errors.DataSourceError as err:
@@ -122,5 +120,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # main(sys.argv[1:])
-    main()
+    main(sys.argv[1:])
+    # main()
