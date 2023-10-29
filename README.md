@@ -42,6 +42,8 @@ your mapbox account and then create your free API key.
         python3 earthquake_v2.py
         in your browser, goto localhost:8051 to access the application
 
+# More to come.  Work In Progress
+
 # License
 
 MIT © Michael A. Biel
