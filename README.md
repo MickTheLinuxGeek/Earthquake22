@@ -7,7 +7,7 @@ earthquake event at that location.  By default, when the app is launched, it dis
 magnitude filter.  To display even more information about a particular event, click on the event's marker to select it, 
 then choose a graph plot type from the dropdown.  The graph plot will be displayed below the events map.
 
-This application was developed with Python, Dash library for creating low-code web data applications, and the Plotly 
+This application was developed with Python, Dash, a library for creating low-code web data applications, and the Plotly 
 library for creating the map and table visualizations.
 
 ![App Preview](assets/images/main.png)
@@ -39,7 +39,7 @@ your mapbox account and then create your free API key.
         pip install -r ./environment/requirements.txt
         save your mapbox API key to a file called .mapbox_token in the earthquake22 directory
     * run app
-        python3 earthquake_v2.py
+        python3 main.py
         in your browser, goto localhost:8051 to access the application
 
 # More to come.  Work In Progress
