@@ -6,3 +6,4 @@
 /.flake8
 /.pylintrc
 /logs/app_log.log*
+/Application_TODO.md
