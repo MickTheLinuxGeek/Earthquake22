@@ -26,7 +26,7 @@ def render(app: Dash) -> html.Div:
         A header Div containing the Plotly logo, Plotly url link, and app title.
     """
 
-    logger.info(f"Entered header.render() function.")
+    logger.info("Entered header.render() function.")
 
     header_div = html.Div(
         className="div-user-controls",
@@ -45,7 +45,7 @@ def render(app: Dash) -> html.Div:
             ),
         ],
     )
-    logger.debug(f"html.Div structure of app page header:  \n{header_div}")
-    logger.info(f"Exited header.render() function.")
+    logger.debug("html.Div structure of app page header:\n %s", header_div)
+    logger.info("Exited header.render() function.")
 
     return header_div

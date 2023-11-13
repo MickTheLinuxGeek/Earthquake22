@@ -47,22 +47,22 @@ def create_scatter_plot1(dataset_df: DataFrame, intensity_dist_df: DataFrame, fi
             The corresponding subplot is added to the fig figure to build the intensity vs. distance graph.
     """
 
-    logger.info(f"Entered create_scatter_plot1() function.")
-    logger.debug(f"dataset_df parameter: \n{dataset_df}")
-    logger.debug(f"intensity_dist_df parameter: \n{intensity_dist_df}")
-    logger.debug(f"figure parameter: \n{fig}")
+    logger.info("Entered create_scatter_plot1() function.")
+    logger.debug("dataset_df parameter:\n %s", dataset_df)
+    logger.debug("intensity_dist_df parameter:\n %s", intensity_dist_df)
+    logger.debug("figure parameter:\n %s", fig)
 
     sct_plt_df = dataset_df.from_records(data=dataset_df.data)
 
-    logger.debug(f"All data scatter plot dataframe:  \n{sct_plt_df}")
+    logger.debug("All data scatter plot dataframe:\n %s", sct_plt_df)
 
     x_i = list(sct_plt_df.x)
     y_i = list(sct_plt_df.y)
     ylabel = intensity_dist_df.ylabel[0]
 
-    logger.debug(f"x coordinates for scatter plot: \n{x_i}")
-    logger.debug(f"y coordinates for scatter plot: \n{y_i}")
-    logger.debug(f"y axis label for scatter plot: \n{ylabel}")
+    logger.debug("x coordinates for scatter plot:\n %s", x_i)
+    logger.debug("y coordinates for scatter plot:\n %s", y_i)
+    logger.debug("y axis label for scatter plot:\n %s", ylabel)
 
     fig.add_trace(
         go.Scatter(
@@ -87,8 +87,8 @@ def create_scatter_plot1(dataset_df: DataFrame, intensity_dist_df: DataFrame, fi
         paper_bgcolor="#FFDEAD",
     )
 
-    logger.debug(f"Figure structure returned: \n{fig}")
-    logger.info(f"Exited create_scatter_plot1() function.")
+    logger.debug("Figure structure returned:\n %s", fig)
+    logger.info("Exited create_scatter_plot1() function.")
 
     return fig
 
@@ -114,21 +114,21 @@ def create_estimated1(dataset_df: DataFrame, fig: Figure) -> Figure:
             The corresponding subplot is added to the fig figure to build the intensity vs. distance graph.
     """
 
-    logger.info(f"Entered create_estimated1() function.")
-    logger.debug(f"dataset_df parameter: \n{dataset_df}")
-    logger.debug(f"figure parameter: \n{fig}")
+    logger.info("Entered create_estimated1() function.")
+    logger.debug("dataset_df parameter:\n %s", dataset_df)
+    logger.debug("figure parameter:\n %s", fig)
 
     est_plt_df = dataset_df.from_records(data=dataset_df.data)
 
-    logger.debug(f"Estimated1 data dataframe:  \n{est_plt_df}")
+    logger.debug("Estimated1 data dataframe:\n %s", est_plt_df)
 
     x_i = list(est_plt_df.x)
     y_i = list(est_plt_df.y)
     name = dataset_df["legend"][0]
 
-    logger.debug(f"x coordinates for scatter/line plot: \n{x_i}")
-    logger.debug(f"y coordinates for scatter/line plot: \n{y_i}")
-    logger.debug(f"Intensity Prediction Equation (IPE) used: \n{name}")
+    logger.debug("x coordinates for scatter/line plot:\n %s", x_i)
+    logger.debug("y coordinates for scatter/line plot:\n %s", y_i)
+    logger.debug("Intensity Prediction Equation (IPE) used:\n %s", name)
 
     fig.add_trace(
         go.Scatter(
@@ -144,8 +144,8 @@ def create_estimated1(dataset_df: DataFrame, fig: Figure) -> Figure:
         )
     )
 
-    logger.debug(f"Figure structure returned: \n{fig}")
-    logger.info(f"Exited create_estimated1() function.")
+    logger.debug("Figure structure returned:\n %s", fig)
+    logger.info("Exited create_estimated1() function.")
 
     return fig
 
@@ -171,21 +171,21 @@ def create_estimated2(dataset_df: DataFrame, fig: Figure) -> Figure:
             The corresponding subplot is added to the fig figure to build the intensity vs. distance graph.
     """
 
-    logger.info(f"Entered create_estimated2() function.")
-    logger.debug(f"dataset_df parameter: \n{dataset_df}")
-    logger.debug(f"figure parameter: \n{fig}")
+    logger.info("Entered create_estimated2() function.")
+    logger.debug("dataset_df parameter:\n %s", dataset_df)
+    logger.debug("figure parameter:\n %s", fig)
 
     est_plt_df = dataset_df.from_records(data=dataset_df.data)
 
-    logger.debug(f"Estimated2 data dataframe:  \n{est_plt_df}")
+    logger.debug("Estimated2 data dataframe:\n %s", est_plt_df)
 
     x_i = list(est_plt_df.x)
     y_i = list(est_plt_df.y)
     name = dataset_df["legend"][0]
 
-    logger.debug(f"x coordinates for estimated2 plot: \n{x_i}")
-    logger.debug(f"y coordinates for estimated2 plot: \n{y_i}")
-    logger.debug(f"Intensity Prediction Equation (IPE) used: \n{name}")
+    logger.debug("x coordinates for estimated2 plot:\n %s", x_i)
+    logger.debug("y coordinates for estimated2 plot:\n %s", y_i)
+    logger.debug("Intensity Prediction Equation (IPE) used:\n %s", name)
 
     fig.add_trace(
         go.Scatter(
@@ -201,8 +201,8 @@ def create_estimated2(dataset_df: DataFrame, fig: Figure) -> Figure:
         )
     )
 
-    logger.debug(f"Figure structure returned: \n{fig}")
-    logger.info(f"Exited create_estimated2() function.")
+    logger.debug("Figure structure returned:\n %s", fig)
+    logger.info("Exited create_estimated2() function.")
 
     return fig
 
@@ -227,14 +227,14 @@ def create_mean_binned(dataset_df: DataFrame, intensity_dist_df: DataFrame, fig:
             The corresponding subplot is added to the fig figure to build the intensity vs. distance graph.
     """
 
-    logger.info(f"Entered create_mean_binned() function.")
-    logger.debug(f"dataset_df parameter: \n{dataset_df}")
-    logger.debug(f"intensity_dist_df parameter: \n{intensity_dist_df}")
-    logger.debug(f"figure parameter: \n{fig}")
+    logger.info("Entered create_mean_binned() function.")
+    logger.debug("dataset_df parameter:\n %s", dataset_df)
+    logger.debug("intensity_dist_df parameter:\n %s", intensity_dist_df)
+    logger.debug("figure parameter:\n %s", fig)
 
     mean_plt_df = dataset_df.from_records(data=dataset_df.data)
 
-    logger.debug(f"Mean binned dataframe:  \n{mean_plt_df}")
+    logger.debug("Mean binned dataframe:\n %s", mean_plt_df)
 
     x_i = mean_plt_df.x
     y_i = mean_plt_df.y
@@ -243,12 +243,12 @@ def create_mean_binned(dataset_df: DataFrame, intensity_dist_df: DataFrame, fig:
     ylabel = intensity_dist_df.ylabel[0]
     name = dataset_df["legend"][0]
 
-    logger.debug(f"x coordinates for mean binned plot: \n{x_i}")
-    logger.debug(f"y coordinates for mean binned plot: \n{y_i}")
-    logger.debug(f"Standard deviation for mean binned plot: \n{yerr}")
-    logger.debug(f"y axis label for mean binned plot: \n{ylabel}")
-    logger.debug(f"x axis label for mean binned plot: \n{xlabel}")
-    logger.debug(f"Legend item name: \n{name}")
+    logger.debug("x coordinates for mean binned plot:\n %s", x_i)
+    logger.debug("y coordinates for mean binned plot:\n %s", y_i)
+    logger.debug("Standard deviation for mean binned plot:\n %s", yerr)
+    logger.debug("y axis label for mean binned plot:\n %s", ylabel)
+    logger.debug("x axis label for mean binned plot:\n %s", xlabel)
+    logger.debug("Legend item name:\n %s", name)
 
     x_x = list(mean_plt_df.x)
     y_y = list(mean_plt_df.y)
@@ -259,7 +259,7 @@ def create_mean_binned(dataset_df: DataFrame, intensity_dist_df: DataFrame, fig:
     n_k[:, 1] = np.array(y_y).reshape(-1, 1)
     n_k[:, 2] = np.array(yyerr).reshape(-1, 1)
 
-    logger.debug(f"Custom data array for hover (dist., CDI, Std. Dev.: \n{n_k}")
+    logger.debug("Custom data array for hover (dist., CDI, Std. Dev.:\n %s", n_k)
 
     fig.add_trace(
         go.Scatter(
@@ -283,8 +283,8 @@ def create_mean_binned(dataset_df: DataFrame, intensity_dist_df: DataFrame, fig:
     fig.update_xaxes(title_text=xlabel)
     fig.update_yaxes(title_text=ylabel)
 
-    logger.debug(f"Figure structure returned: \n{fig}")
-    logger.info(f"Exited create_mean_binned() function.")
+    logger.debug("Figure structure returned:\n %s", fig)
+    logger.info("Exited create_mean_binned() function.")
 
     return fig
 
@@ -309,24 +309,24 @@ def create_median(dataset_df: DataFrame, intensity_dist_df: DataFrame, fig: Figu
             The corresponding subplot is added to the fig figure to build the intensity vs. distance graph.
     """
 
-    logger.info(f"Entered create_median() function.")
-    logger.debug(f"dataset_df parameter: \n{dataset_df}")
-    logger.debug(f"intensity_dist_df parameter: \n{intensity_dist_df}")
-    logger.debug(f"figure parameter: \n{fig}")
+    logger.info("Entered create_median() function.")
+    logger.debug("dataset_df parameter:\n %s", dataset_df)
+    logger.debug("intensity_dist_df parameter:\n %s", intensity_dist_df)
+    logger.debug("figure parameter:\n %s", fig)
 
     median_plt_df = dataset_df.from_records(data=dataset_df.data)
 
-    logger.debug(f"Median plot data dataframe:  \n{median_plt_df}")
+    logger.debug("Median plot data dataframe:\n %s", median_plt_df)
 
     xii = median_plt_df.x  # Distance
     yii = median_plt_df.y  # CDI
     xlabel = intensity_dist_df.xlabel[0]
     name = dataset_df["legend"][0]
 
-    logger.debug(f"Distance values for median plot: \n{xii}")
-    logger.debug(f"CDI values for median plot: \n{yii}")
-    logger.debug(f"x axis label for median plot: \n{xlabel}")
-    logger.debug(f"Legend item name: \n{name}")
+    logger.debug("Distance values for median plot:\n %s", xii)
+    logger.debug("CDI values for median plot:\n %s", yii)
+    logger.debug("x axis label for median plot:\n %s", xlabel)
+    logger.debug("Legend item name:\n %s", name)
 
     fig.add_trace(
         go.Scatter(
@@ -342,7 +342,7 @@ def create_median(dataset_df: DataFrame, intensity_dist_df: DataFrame, fig: Figu
     )
     fig.update_xaxes(title_text=xlabel, range=[0, max(xii)])
 
-    logger.debug(f"Figure structure returned: \n{fig}")
-    logger.info(f"Exited create_median() function.")
+    logger.debug("Figure structure returned:\n %s", fig)
+    logger.info("Exited create_median() function.")
 
     return fig

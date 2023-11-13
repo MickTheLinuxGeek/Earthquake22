@@ -36,7 +36,7 @@ def render(app: Dash, data: GeoDataFrame) -> html.Div:
         A Div containing the map-graph component
     """
 
-    logger.info(f"Entered event_map.render() function.")
+    logger.info("Entered event_map.render() function.")
 
     @app.callback(
         Output("map-graph", "children"),
@@ -73,7 +73,7 @@ def render(app: Dash, data: GeoDataFrame) -> html.Div:
             This function is called with the geo_dff, which is the filtered data, to create the actual map figure.
         """
 
-        logger.info(f"Entered update_map_graph() dash callback function.")
+        logger.info("Entered update_map_graph() dash callback function.")
 
         try:
             geo_dff = data[
@@ -83,7 +83,7 @@ def render(app: Dash, data: GeoDataFrame) -> html.Div:
                 & (data["Mag"] <= max_mag)
             ]
 
-            logger.debug(f"Filtered GeoDataFrame, geo_dff based on event date and magnitude.  \n{geo_dff}")
+            logger.debug("Filtered GeoDataFrame, geo_dff based on event date and magnitude.\n  %s", geo_dff)
 
             fig = plot_map_graph(geo_dff)
 
@@ -113,12 +113,12 @@ def render(app: Dash, data: GeoDataFrame) -> html.Div:
                 ),
                 id="map-graph",
             )
-            logger.debug(f"Event map html.Div with map figure based on filtered GeoDataFrame.  \n{event_map_div}")
-            logger.info(f"Returned from update_map_graph() dash callback function.")
+            logger.debug("Event map html.Div with map figure based on filtered GeoDataFrame.\n %s", event_map_div)
+            logger.info("Returned from update_map_graph() dash callback function.")
             return event_map_div
         except (FileNotFoundError, IOError, OSError, PermissionError) as err:
             print(f"event_map.py:  Event map could not be updated!  {err}")
-            logger.critical(f"Event map could not be updated/rendered.  {err}")
+            logger.critical("Event map could not be updated/rendered.  %s", err)
             return html.Div(
                 dbc.Alert(
                     children=[
@@ -135,5 +135,5 @@ def render(app: Dash, data: GeoDataFrame) -> html.Div:
                 style={"text-align": "center"},
             )
 
-    logger.info(f"Returned from event_map.render() function.")
+    logger.info("Returned from event_map.render() function.")
     return html.Div(id="map-graph")

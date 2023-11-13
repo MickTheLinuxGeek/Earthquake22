@@ -21,7 +21,7 @@ def render() -> html.Div:
         html.Div:  Contains a html.Label and dcc.Dropdown components.
     """
 
-    logger.info(f"Entered plot_type_dropdown.render() function.")
+    logger.info("Entered plot_type_dropdown.render() function.")
 
     plot_type_drop = html.Div(
         children=[
@@ -46,6 +46,6 @@ def render() -> html.Div:
         ],
     )
 
-    logger.info(f"Exited plot_type_dropdown.render() function.")
+    logger.info("Exited plot_type_dropdown.render() function.")
 
     return plot_type_drop

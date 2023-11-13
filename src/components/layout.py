@@ -57,7 +57,7 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
         header
     """
 
-    logger.info(f"Entered create_layout() function; Created application html layout.")
+    logger.info("Entered create_layout() function; Created application html layout.")
 
     eq_layout = html.Div(
         dbc.Container(
@@ -126,6 +126,6 @@ def create_layout(app: Dash, data: GeoDataFrame) -> html.Div:
         )
     )
 
-    logger.info(f"Exited create_layout() function; Created application html layout.")
+    logger.info("Exited create_layout() function; Created application html layout.")
 
     return eq_layout

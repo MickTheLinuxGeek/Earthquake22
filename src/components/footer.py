@@ -22,7 +22,7 @@ def render() -> dbc.Row:
         A footer dbc.Row component containing links and contact information.
     """
 
-    logger.info(f"Entered footer.render() function.")
+    logger.info("Entered footer.render() function.")
 
     app_footer = dbc.Row(
         style={"margin-top": "12px", "margin-bottom": "10px"},
@@ -90,7 +90,7 @@ def render() -> dbc.Row:
         ],
     )
 
-    logger.debug(f"Page footer structure. \n{app_footer}")
-    logger.info(f"Exited footer.render() function.")
+    logger.debug("Page footer structure.\n %s", app_footer)
+    logger.info("Exited footer.render() function.")
 
     return app_footer

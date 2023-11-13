@@ -43,7 +43,7 @@ def render(app: Dash) -> html.Div:
         An html.Div that contains the graph-plot from the app callback.
     """
 
-    logger.info(f"Entered graph_plot.render() function.")
+    logger.info("Entered graph_plot.render() function.")
 
     @app.callback(
         Output("graph-plot", "children"),
@@ -86,7 +86,7 @@ def render(app: Dash) -> html.Div:
             display_dyfi_responses_tbl(event_id)
         """
 
-        logger.info(f"Entered plot_graphs() dash callback function.")
+        logger.info("Entered plot_graphs() dash callback function.")
 
         try:
             if selected_data is None:
@@ -115,8 +115,8 @@ def render(app: Dash) -> html.Div:
                 )
             event_id = selected_data["points"][0]["customdata"][8]
 
-            logger.debug(f"Event id selected:  {event_id}")
-            logger.debug(f"Number of DYFI responses:  {selected_data['points'][0]['customdata'][6]}")
+            logger.debug("Event id selected:  %s", event_id)
+            logger.debug("Number of DYFI responses:  %s", selected_data["points"][0]["customdata"][6])
 
             # if DYFI felt/responses = zero
             if selected_data["points"][0]["customdata"][6] == 0:
@@ -137,9 +137,9 @@ def render(app: Dash) -> html.Div:
                 )
             graph_result = None
 
-            logger.debug(f"Plot type:  {plot_type}")
-            logger.debug(f"Event id:  {event_id}")
-            logger.debug(f"Selected data:  {selected_data}")
+            logger.debug("Plot type:  %s", plot_type)
+            logger.debug("Event id:  %s,", event_id)
+            logger.debug("Selected data:  %s", selected_data)
 
             if plot_type == "Intensity Plot(1km)":
                 graph_result = display_intensity_plot_1km(event_id, selected_data)
@@ -162,7 +162,7 @@ def render(app: Dash) -> html.Div:
             return graph_result, DROPDOWN_NOT_DISABLED, plot_type
         except (FileNotFoundError, IOError, OSError, PermissionError, DataSourceError) as err:
             print(f"graph_plot.py:  Application data files missing!  Check App error log.  {err}")
-            logger.critical(f"Application data missing!  Check App error log.  {err}")
+            logger.critical("Application data missing!  Check App error log.  %s", err)
             # plot_graphs() return
             return (
                 html.Div(
@@ -183,5 +183,5 @@ def render(app: Dash) -> html.Div:
             )
 
     # render() return
-    logger.info(f"Returned from graph_plot.render() function.")
+    logger.info("Returned from graph_plot.render() function.")
     return html.Div(id="graph-plot")

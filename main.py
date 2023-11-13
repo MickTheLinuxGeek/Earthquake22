@@ -16,8 +16,8 @@ __status__ = "development"
 
 import sys
 import logging
+import logging.handlers
 import getopt
-import logging.handlers as handlers
 from pathlib import Path
 
 from pandas import set_option
@@ -58,16 +58,16 @@ def main(argv: list) -> None:
     """
 
     try:
-        opts, args = getopt.getopt(argv, "hl:", ["help", "log="])
+        opts, _ = getopt.getopt(argv, "hl:", ["help", "log="])
     except getopt.GetoptError as err:
         print(f"Invalid command-line argument:  {err}")
-        print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-        print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+        print("Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+        print("  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            print(f"Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
-            print(f"  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+            print("Usage:  main.py [-l DEBUG|INFO|WARNING|ERROR|CRITICAL]")
+            print("  or:   main.py [--log= DEBUG|INFO|WARNING|ERROR|CRITICAL]")
             sys.exit()
         elif opt in ("-l", "--log"):
             loglevel = arg
@@ -84,9 +84,9 @@ def main(argv: list) -> None:
                 level=numeric_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[rfh]
             )
 
-            logger = logging.getLogger("sc_earthquake_app")  #
+            logger = logging.getLogger("sc_earthquake_app")
 
-            logger.info(f"Application Started")
+            logger.info("Application Started")
 
     try:
         data = load_event_data(event_file)

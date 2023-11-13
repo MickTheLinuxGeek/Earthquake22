@@ -19,9 +19,9 @@ def determine_zoom_level(longitudes=None, latitudes=None):
     the center coordinate tuple of all provided coordinate tuples.
     """
 
-    logger.info(f"Entered determine_zoom_level() function.")
-    logger.debug(f"longitudes parameter:  \n{longitudes}")
-    logger.debug(f"latitudes parameter:  \n{latitudes}")
+    logger.info("Entered determine_zoom_level() function.")
+    logger.debug("longitudes parameter:\n %s", longitudes)
+    logger.debug("latitudes parameter:\n %s", latitudes)
 
     # Check whether both latitudes and longitudes have been passed,
     # or if the list lengths don't match
@@ -53,8 +53,8 @@ def determine_zoom_level(longitudes=None, latitudes=None):
 
     # Finally, return the zoom level and the associated boundary-box center coordinates
 
-    logger.debug(f"Calculated zoom level:  {zoom}")
-    logger.debug(f"Calculated map center coordinates:  {b_box['center']}")
-    logger.info(f"Exited determine_zoom_level() function.")
+    logger.debug("Calculated zoom level:  %s", zoom)
+    logger.debug("Calculated map center coordinates:  %s", b_box["center"])
+    logger.info("Exited determine_zoom_level() function.")
 
     return zoom, b_box["center"]

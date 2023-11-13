@@ -7,10 +7,9 @@
  """
 
 from datetime import date, datetime as dt
+import logging
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ def render() -> html.Div:
         html.Div:  Contains a dbc.Label and a dcc.DatePickerRange component that contains the filter start & end dates.
     """
 
-    logger.info(f"Entered event_date_picker_range.render() function.")
+    logger.info("Entered event_date_picker_range.render() function.")
 
     date_picker_comp = html.Div(
         children=[
@@ -46,6 +45,6 @@ def render() -> html.Div:
             ),
         ],
     )
-    logger.info(f"Exited event_date_picker_range.render() function.")
+    logger.info("Exited event_date_picker_range.render() function.")
 
     return date_picker_comp

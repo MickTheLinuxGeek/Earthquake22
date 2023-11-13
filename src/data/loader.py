@@ -46,7 +46,7 @@ def load_event_data(file: Path) -> gpd.GeoDataFrame:
         geo_df = gpd.read_file(file, engine="pyogrio")
     except pyogrio.errors.DataSourceError as err:
         print(f"SC_Earthquake.geojson file missing from data directory.  Run usgs_api to fix.  {err}")
-        logger.critical(f"SC_Earthquake.geojson file is missing.  {err}  Run usgs_api.py to download app data files.")
+        logger.critical("SC_Earthquake.geojson file is missing.  Run usgs_api.py to download app data files. %s", err)
         raise
 
     # The time column in the dataframe is a Unix epoch time in ms.  The following two statements convert that epoch
@@ -97,7 +97,7 @@ def load_event_data(file: Path) -> gpd.GeoDataFrame:
     geo_df["Depth"] = geo_df.geometry.z
     geo_df["Mag"] = geo_df.Mag.round(1)
 
-    logger.debug(f"Wrangled dataframe, geo_df after SC_Earthquakes.geojson file read.  \n{geo_df}")
+    logger.debug("Wrangled dataframe, geo_df after SC_Earthquakes.geojson file read.\n %s", geo_df)
     logger.info("Exited load_event_data() function.")
 
     return geo_df

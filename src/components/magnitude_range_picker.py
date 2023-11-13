@@ -23,7 +23,7 @@ def render() -> html.Div:
         html.Div:  Contains min-mag-input and max-mag-input fields for the magnitude_range_picker (this) component.
     """
 
-    logger.info(f"Entered magnitude_range_picker.render() function.")
+    logger.info("Entered magnitude_range_picker.render() function.")
 
     mag_range_picker = html.Div(
         children=[
@@ -65,6 +65,6 @@ def render() -> html.Div:
         ],
     )
 
-    logger.info(f"Exited magnitude_range_picker.render() function.")
+    logger.info("Exited magnitude_range_picker.render() function.")
 
     return mag_range_picker

@@ -36,7 +36,7 @@ def render(app: Dash) -> html.Div:
 
     """
 
-    logger.info(f"Entered graph_plot_div.render() function.")
+    logger.info("Entered graph_plot_div.render() function.")
 
     graph_plot_div = html.Div(
         children=[
@@ -53,7 +53,7 @@ def render(app: Dash) -> html.Div:
         style={"align-self": "center"},
     )
 
-    logger.debug(f"Returned html.Div structure.\n{graph_plot_div}")
-    logger.info(f"Exited graph_plot_div.render() function.")
+    logger.debug("Returned html.Div structure.\n %s", graph_plot_div)
+    logger.info("Exited graph_plot_div.render() function.")
 
     return graph_plot_div
