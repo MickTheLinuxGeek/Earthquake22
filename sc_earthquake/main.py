@@ -25,14 +25,14 @@ from dash import Dash
 from dash_bootstrap_components.themes import BOOTSTRAP
 import pyogrio.errors
 
-from src.components.layout import create_layout
-from src.data.loader import load_event_data
+from sc_earthquake.src.components.layout import create_layout
+from sc_earthquake.src.data.loader import load_event_data
 
 # cache is instantiated in the __init__.py of graph_plot_functions and imported here.
-from src.graph_plot_functions import cache
+from sc_earthquake.src.graph_plot_functions import cache
 
-LOG_PATH = Path(r"./logs")
-DATA_DIR = Path(r"./data")
+LOG_PATH = Path(r"logs")
+DATA_DIR = Path(r"data")
 event_file = DATA_DIR / "SC_Earthquake.geojson"
 log_file = LOG_PATH / "app_log.log"
 

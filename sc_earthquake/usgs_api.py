@@ -33,7 +33,7 @@ import pandas as pd
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-DATA_DIR = r"./data/"
+DATA_DIR = r"data/"
 VERBOSE_MODE = False
 EVENTS_FILE = False
 
@@ -105,9 +105,7 @@ def get_eq_events(http):
         #        filename = r"./data/" + file_pfx + r"_SC_Earthquake.geojson"
         if VERBOSE_MODE:
             print(f"Saving SC earthquake events data to {filename}")
-        with open(
-            filename, "w", encoding="utf-8"
-        ) as f:  # pylint: disable='invalid-name'  # noqa
+        with open(filename, "w", encoding="utf-8") as f:  # pylint: disable='invalid-name'  # noqa
             json.dump(data, f)
     if VERBOSE_MODE:
         print("Saving earthquake event ids. ")
@@ -152,9 +150,7 @@ def get_dyfi_urls(eq_id_url_df, http):
             res_data = fut.result().json()
             event_id = res_data["id"]
             res_data_df = pd.DataFrame(res_data["properties"]["products"]["dyfi"])
-            temp_df = res_data_df.loc[
-                res_data_df["preferredWeight"] == res_data_df["preferredWeight"].max()
-            ]
+            temp_df = res_data_df.loc[res_data_df["preferredWeight"] == res_data_df["preferredWeight"].max()]
             temp_df = pd.json_normalize(temp_df["contents"])
             if "cdi_zip.txt.url" not in temp_df:
                 continue
@@ -195,9 +191,7 @@ def process_fast_dyfi_urls_hlpr(http, executor, eid_list, url_list):
 
     """
     iterx = zip(eid_list, url_list)
-    future_to_url = {
-        executor.submit(get_url, http, url): (url, eid) for eid, url in iterx
-    }
+    future_to_url = {executor.submit(get_url, http, url): (url, eid) for eid, url in iterx}
     for future in futures.as_completed(future_to_url):
         url = future_to_url[future][0]
         eid = future_to_url[future][1]
@@ -215,9 +209,7 @@ def process_fast_dyfi_urls_hlpr(http, executor, eid_list, url_list):
             filename = Path(DATA_DIR + eid + "/" + filenme)
             if VERBOSE_MODE:
                 print(f"Saving file {filename}")
-            with open(
-                filename, "w", encoding="utf-8"
-            ) as f1:  # pylint: disable='invalid-name'  # noqa
+            with open(filename, "w", encoding="utf-8") as f1:  # pylint: disable='invalid-name'  # noqa
                 json.dump(data, f1)
     # return
 
@@ -375,15 +367,9 @@ def get_dyfi_zip_data(zip_df, http):
 
 if __name__ == "__main__":
     # Driver function
-    my_parser = argparse.ArgumentParser(
-        prog="usgs_api", description="Retrieve earthquake data from USGS.gov"
-    )
-    my_parser.add_argument(
-        "-f", action="store_true", help="Extract earthquake events to file"
-    )
-    my_parser.add_argument(
-        "-v", "--verbose", action="store_true", dest="v", help="Display verbose output"
-    )
+    my_parser = argparse.ArgumentParser(prog="usgs_api", description="Retrieve earthquake data from USGS.gov")
+    my_parser.add_argument("-f", action="store_true", help="Extract earthquake events to file")
+    my_parser.add_argument("-v", "--verbose", action="store_true", dest="v", help="Display verbose output")
     args = my_parser.parse_args()
     if args.v:
         VERBOSE_MODE = True
