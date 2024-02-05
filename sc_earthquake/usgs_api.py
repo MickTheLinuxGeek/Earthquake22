@@ -33,7 +33,7 @@ import pandas as pd
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-DATA_DIR = r"data/"
+DATA_DIR = r"sc_earthquake/data/"
 VERBOSE_MODE = False
 EVENTS_FILE = False
 
@@ -350,7 +350,8 @@ def get_dyfi_zip_data(zip_df, http):
             axis=1,
             inplace=True,
         )
-        res_data_dff.State.fillna("No State", inplace=True)
+        # res_data_dff.State.fillna("No State", inplace=True)  # Statement changed to following statement
+        res_data_dff.fillna({"State": "No State"}, inplace=True)  # Changed because of Pandas 3.0 FutureWarning
         res_data_dff.drop(["Suspect?", "Std_Dev", "cityid]"], axis=1, inplace=True)
         #        filename = data_dir + "cdi_zip" + "." + eid
         new_dir = Path(DATA_DIR + eid)
