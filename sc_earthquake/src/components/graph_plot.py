@@ -6,6 +6,7 @@ Functions
     render(app: Dash) -> html.Div
 """
 
+import os
 import logging
 from dash import Dash, html, Input, Output
 import dash_bootstrap_components as dbc
@@ -22,7 +23,9 @@ from ..graph_plot_functions.graph_functions import (
 
 DROPDOWN_DISABLED = True
 DROPDOWN_NOT_DISABLED = False
-DEFAULT_PLOT_TYPE = "Intensity Plot(10km)"
+
+# DEFAULT_PLOT_TYPE = "Intensity Plot(10km)"
+default_plot_type = os.getenv("DEFAULT_PLOT_TYPE")
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +114,7 @@ def render(app: Dash) -> html.Div:
                         className="center",
                     ),
                     DROPDOWN_DISABLED,
-                    DEFAULT_PLOT_TYPE,
+                    default_plot_type,
                 )
             event_id = selected_data["points"][0]["customdata"][8]
 
@@ -179,7 +182,7 @@ def render(app: Dash) -> html.Div:
                     style={"text-align": "center"},
                 ),
                 DROPDOWN_NOT_DISABLED,
-                DEFAULT_PLOT_TYPE,
+                default_plot_type,
             )
 
     # render() return

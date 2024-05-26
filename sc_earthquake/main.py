@@ -7,34 +7,44 @@ This is the module that is launched to run the application.
 """
 
 __author__ = "Michael Biel"
-__copyright__ = "Copyright 2023, MAB-Geo Data Science, The Earthquake Vis. Project"
+__copyright__ = "Copyright 2024, MAB-Geo Data Science, The Earthquake Data Explorer"
 __license__ = "MIT"
 __version__ = "1.0.0"
 __maintainer__ = "Michael Biel"
 __email__ = "mick.the.linux.geek@hotmail.com"
 __status__ = "development"
 
+import os
 import sys
 import logging
 import logging.handlers
 import getopt
 from pathlib import Path
-
 from pandas import set_option
-from dash import Dash
-from dash_bootstrap_components.themes import BOOTSTRAP
+
+# from dash import Dash
+# from dash_bootstrap_components.themes import BOOTSTRAP
 import pyogrio.errors
 
+from sc_earthquake import create_app
 from sc_earthquake.src.components.layout import create_layout
 from sc_earthquake.src.data.loader import load_event_data
 
 # cache is instantiated in the __init__.py of graph_plot_functions and imported here.
 from sc_earthquake.src.graph_plot_functions import cache
 
-LOG_PATH = Path(r"logs")
-DATA_DIR = Path(r"data")
-event_file = DATA_DIR / "SC_Earthquake.geojson"
-log_file = LOG_PATH / "app_log.log"
+# dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+# load_dotenv()
+
+# log_path = Path(r"logs")
+# data_dir = Path(r"data")
+# event_file = data_dir / "SC_Earthquake.geojson"
+# log_file = log_path / "app_log.log"
+
+log_path = Path(os.getenv("LOG_PATH"))
+data_dir = os.getenv("DATA_DIR")
+event_file = Path(data_dir) / Path(os.getenv("EVENT_FILE"))
+log_file = Path(log_path) / Path(os.getenv("LOG_FILE"))
 
 set_option("display.max_columns", 32)
 set_option("display.width", 132)
@@ -42,7 +52,7 @@ set_option("display.width", 132)
 # Delete log files each time the app starts
 # Already using pathlib; Use pathlib methods instead of importing os module
 if log_file.exists():
-    for file in list(LOG_PATH.glob("*")):
+    for file in list(log_path.glob("*")):
         file.unlink(missing_ok=True)
 
 
@@ -88,24 +98,32 @@ def main(argv: list) -> None:
 
             logger.info("Application Started")
 
+    # try:
+    #     data = load_event_data(event_file)
+    # except pyogrio.errors.DataSourceError as err:
+    #     print(f"Need to run usgs_api.py to create App data files.  {err}")
+    #     sys.exit(1)
+
+    # app = Dash(
+    #     __name__,
+    #     external_stylesheets=[BOOTSTRAP],
+    #     meta_tags=[
+    #         {
+    #             "name": "viewport",
+    #             "content": "width=device-width, initial-scale=1.0, maximum-scale=1.2, minimum-scale=0.5,",
+    #         }
+    #     ],
+    #     suppress_callback_exceptions=True
+    #     prevent_initial_callbacks=True
+    #
+
+    app = create_app()
+
     try:
         data = load_event_data(event_file)
     except pyogrio.errors.DataSourceError as err:
         print(f"Need to run usgs_api.py to create App data files.  {err}")
         sys.exit(1)
-    # else:
-    app = Dash(
-        __name__,
-        external_stylesheets=[BOOTSTRAP],
-        meta_tags=[
-            {
-                "name": "viewport",
-                "content": "width=device-width, initial-scale=1.0, maximum-scale=1.2, minimum-scale=0.5,",
-            }
-        ],
-        suppress_callback_exceptions=True
-        # prevent_initial_callbacks=True,
-    )
 
     # Initialize cache instance
     cache.init_app(app.server)

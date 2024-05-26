@@ -11,6 +11,7 @@ A module of functions, one each per graph plot:
     display_dyfi_responses_tbl()
 """
 
+import os
 import json
 import logging
 from pathlib import Path
@@ -28,13 +29,18 @@ from ..data.mapbox_token_loader import load_mapbox_token
 
 logger = logging.getLogger(__name__)
 
-TIMEOUT = 120
-DATA_DIR = Path(r"./data")
-ZC_DATA_PATH = Path(r"zipcode_data")
+# TIMEOUT = 120
+timeout_seconds = int(os.getenv("TIMEOUT"))
+
+# DATA_DIR = Path(r"./data")
+data_dir = Path(os.getenv("DATA_DIR"))
+
+# ZC_DATA_PATH = Path(r"zipcode_data")
+zc_data_path = os.getenv("ZC_DATA_PATH")
 
 
 # graph-plot functions
-@cache.memoize(timeout=TIMEOUT)
+@cache.memoize(timeout=timeout_seconds)
 def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
     """Display 1km spacing choropleth map of earthquake DYFI intensities
 
@@ -62,7 +68,7 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
 
     mapbox_access_token = load_mapbox_token()
 
-    filename = DATA_DIR / evnt_id / "dyfi_geo_1km.geojson"
+    filename = data_dir / evnt_id / "dyfi_geo_1km.geojson"
 
     logger.debug("Filename to be read. %s", filename)
 
@@ -207,7 +213,7 @@ def display_intensity_plot_1km(evnt_id: str, sdata: dict) -> html.Div:
     return int_plot_1km
 
 
-@cache.memoize(timeout=TIMEOUT)
+@cache.memoize(timeout=timeout_seconds)
 def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
     """Display 10km spacing choropleth map of earthquake DYFI intensities
 
@@ -235,7 +241,7 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
 
     mapbox_access_token = load_mapbox_token()
 
-    filename = DATA_DIR / evnt_id / "dyfi_geo_10km.geojson"
+    filename = data_dir / evnt_id / "dyfi_geo_10km.geojson"
 
     logger.debug("Input filename:  %s", filename)
 
@@ -379,7 +385,7 @@ def display_intensity_plot_10km(evnt_id: str, sdata: dict) -> html.Div:
     return int_plot_10km
 
 
-@cache.memoize(timeout=TIMEOUT)
+@cache.memoize(timeout=timeout_seconds)
 def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:  # pylint:  disable=R0914
     """Display a zipcode choropleth map of the earthquake DYFI intensities.
 
@@ -407,7 +413,7 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:  # pylint:  disable
 
     mapbox_access_token = load_mapbox_token()
 
-    filename = DATA_DIR / evnt_id / "cdi_zip.csv"
+    filename = data_dir / evnt_id / "cdi_zip.csv"
 
     logger.debug("Input filename:  %s", filename)
 
@@ -423,13 +429,13 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:  # pylint:  disable
     logger.debug("Input dataframe:\n %s", cdi_zip_df)
 
     # Using NC, SC, & GA region zipcodes instead of just SC
-    # zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.geojson"
+    # zc_filename = data_dir / "NC_SC_GA_region_zipcodes.geojson"
     # Used parquet file format for the zip code file because it is read in faster; geojson file read is way too slow
 
-    # zc_filename = DATA_DIR / "NC_SC_GA_region_zipcodes.parquet"
+    # zc_filename = data_dir / "NC_SC_GA_region_zipcodes.parquet"
     # sc_zip_df = gpd.read_parquet(zc_filename, columns=["geometry", "ZCTA5CE10"])
 
-    zc_filename = DATA_DIR / ZC_DATA_PATH / "cb_2010_45_zcta510.shp"
+    zc_filename = data_dir / zc_data_path / "cb_2010_45_zcta510.shp"
 
     logger.debug("SC cartographic boundary zipcode shapefile:  %s", zc_filename)
 
@@ -581,7 +587,7 @@ def display_zip_plot(evnt_id: str, sdata: dict) -> html.Div:  # pylint:  disable
     return zip_plot
 
 
-@cache.memoize(timeout=TIMEOUT)
+@cache.memoize(timeout=timeout_seconds)
 def display_intensity_dist_plot(evnt_id: str) -> html.Div:
     """Display a graph of the event's DYFI reported intensities vs. hypo-central distance from the event.
 
@@ -630,7 +636,7 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
 
     logger.debug("Event id parameter:  %s", evnt_id)
 
-    filename = DATA_DIR / evnt_id / "dyfi_plot_atten.json"
+    filename = data_dir / evnt_id / "dyfi_plot_atten.json"
 
     logger.debug("Input filename:  %s", filename)
 
@@ -730,7 +736,7 @@ def display_intensity_dist_plot(evnt_id: str) -> html.Div:
     return int_dist
 
 
-@cache.memoize(timeout=TIMEOUT)
+@cache.memoize(timeout=timeout_seconds)
 def display_response_time_plot(evnt_id: str) -> html.Div:
     """Display a line graph of DYFI number of responses vs. time since earthquake event.
 
@@ -753,7 +759,7 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
 
     logger.debug("Event id parameter:  %s", evnt_id)
 
-    filename = DATA_DIR / evnt_id / "dyfi_plot_numresp.json"
+    filename = data_dir / evnt_id / "dyfi_plot_numresp.json"
 
     logger.debug("Input filename:  %s", filename)
 
@@ -834,7 +840,7 @@ def display_response_time_plot(evnt_id: str) -> html.Div:
     return resp_time
 
 
-@cache.memoize(timeout=TIMEOUT)
+@cache.memoize(timeout=timeout_seconds)
 def display_dyfi_responses_tbl(evnt_id: str) -> html.Div:
     """Display a table of the DYFI responses information.
 
@@ -857,7 +863,7 @@ def display_dyfi_responses_tbl(evnt_id: str) -> html.Div:
 
     logger.debug("Event id parameter:  %s", evnt_id)
 
-    filename = DATA_DIR / evnt_id / "cdi_zip.csv"
+    filename = data_dir / evnt_id / "cdi_zip.csv"
 
     logger.debug("Input filename:  %s", filename)
 
