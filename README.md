@@ -1,3 +1,5 @@
+# THIS REPOSITORY HAS BEEN ARCHIVED AND NOW READ ONLY!
+
 # Earthquake Data Explorer
 
 A data visualization app for 2021 through 2022 South Carolina Earthquake Swarm.  The application will present a map 
